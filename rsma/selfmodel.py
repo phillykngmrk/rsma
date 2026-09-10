@@ -1,15 +1,20 @@
 """
-The self-model. Two jobs:
+The self-model. Two jobs, sharing one encoder of the fast-weight state:
 
-1. Gate: read a summary of a layer's current fast-weight delta plus the pooled input of the
-   current chunk, and decide how much of this chunk's proposed self-modification to apply.
-   Trained end to end by the language-model loss flowing back through the fast-weight update.
+1. Gates. From a summary of a layer's fast-weight delta plus the pooled input of the current
+   chunk, decide per head how much of the old memory to keep and how much of this chunk's
+   proposed modification to write. Trained end to end by the language-model loss flowing back
+   through the fast-weight update.
 
-2. Predict: read the summaries of every fast layer after a chunk's update, plus the pooled final
-   hidden state, and predict the loss the model will incur on the next chunk. Trained against the
-   loss that actually occurs. At inference this prediction drives rollback.
+2. Forecast. From the summaries of every fast layer at the start of a chunk plus the pooled
+   hidden state of the chunk before, predict the BENEFIT of the carried fast state on that
+   chunk: loss with the state reset minus loss with the state carried. Positive means the
+   memory helps. Trained against the benefit actually measured (a second forward pass with the
+   state reset). At inference the forecast drives rollback: a modification is discarded when
+   the forecast benefit of the new state is lower than that of the state before it.
 
-Both share one summary encoder.
+Predicting benefit rather than absolute loss separates the effect of the modification from the
+difficulty of the text, which is what gating and rollback actually need.
 """
 import torch
 import torch.nn as nn
@@ -35,17 +40,21 @@ class SelfModel(nn.Module):
             nn.Linear(H * per_head, hid), nn.GELU(), nn.Linear(hid, hid), nn.GELU()
         )
         self.gate = nn.Sequential(
-            nn.Linear(hid + cfg.d_model, hid), nn.GELU(), nn.Linear(hid, H)
+            nn.Linear(hid + cfg.d_model, hid), nn.GELU(), nn.Linear(hid, 2 * H)
         )
         self.predict = nn.Sequential(
-            nn.Linear(n_fast_layers * hid + cfg.d_model, hid), nn.GELU(), nn.Linear(hid, 1)
+            nn.Linear(n_fast_layers * hid + cfg.d_model, hid), nn.GELU(), nn.Linear(hid, hid), nn.GELU(), nn.Linear(hid, 1)
         )
         self.reset_special_init()
 
     def reset_special_init(self):
-        # open gate at init so training starts as a plain fast-weight model
+        # start with the write gate open (0.88) and the keep gate nearly closed to forgetting (0.98)
         nn.init.zeros_(self.gate[-1].weight)
-        nn.init.constant_(self.gate[-1].bias, 2.0)
+        with torch.no_grad():
+            self.gate[-1].bias[: self.H].fill_(2.0)
+            self.gate[-1].bias[self.H:].fill_(4.0)
+        nn.init.zeros_(self.predict[-1].weight)
+        nn.init.zeros_(self.predict[-1].bias)
 
     def summarize(self, delta: torch.Tensor) -> torch.Tensor:
         """delta: (B, H, R, d) -> (B, H*(3+summary_dim))"""
@@ -63,17 +72,18 @@ class SelfModel(nn.Module):
         idx = torch.full((delta.shape[0],), fast_index, device=delta.device, dtype=torch.long)
         return self.encoder(s) + self.layer_emb(idx)
 
-    def gate_from_encoding(self, enc: torch.Tensor, pooled_x: torch.Tensor) -> torch.Tensor:
-        """(B, H, 1, 1) multiplier in (0,1) on this chunk's proposed update."""
+    def gates_from_encoding(self, enc: torch.Tensor, pooled_x: torch.Tensor):
+        """returns (write, keep), each (B, H, 1, 1) in (0,1)."""
         g = torch.sigmoid(self.gate(torch.cat([enc, pooled_x], dim=-1)))
-        return g[:, :, None, None]
+        w, k = g[:, : self.H], g[:, self.H:]
+        return w[:, :, None, None], k[:, :, None, None]
 
-    def predict_loss(self, encs: torch.Tensor, pooled_h: torch.Tensor) -> torch.Tensor:
+    def predict_benefit(self, encs: torch.Tensor, pooled_h: torch.Tensor) -> torch.Tensor:
         """
         encs: (B, C, n_fast, hid) encodings of each fast layer's state at the start of chunk c
         pooled_h: (B, C, d_model) pooled final hidden state of the chunk before
-        returns (B, C) predicted mean loss for chunk c
+        returns (B, C): predicted (loss with state reset - loss with state carried) for chunk c
         """
         B, C = encs.shape[:2]
         x = torch.cat([encs.reshape(B, C, -1), pooled_h], dim=-1)
-        return F.softplus(self.predict(x)).squeeze(-1)
+        return self.predict(x).squeeze(-1)

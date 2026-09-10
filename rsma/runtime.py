@@ -36,15 +36,15 @@ class SelfModifyingRuntime:
         snapshot = self.model.clone_state(self.state)
         _, new_state, aux = self.model(x, self.state, targets=y)
         actual = aux["lm_loss"].item()
-        forecast = aux["pred_loss"][:, -1].mean().item() if "pred_loss" in aux else actual
+        forecast = aux["pred_benefit"][:, -1].mean().item() if "pred_benefit" in aux else 0.0
         rolled_back = False
         if self.ema_loss is None:
             self.ema_loss = actual
-        if self.tier >= 2 and "pred_loss" in aux:
-            # counterfactual: does the self-model expect the modified state to do worse than the
+        if self.tier >= 2 and "pred_benefit" in aux:
+            # counterfactual: does the self-model expect the modified state to help less than the
             # state before this sequence? If so, discard the modification.
             without = self.model.forecast(snapshot, aux["pooled_last"]).mean().item()
-            if forecast > without * (1.0 + self.tol):
+            if forecast < without - self.tol:
                 new_state = snapshot
                 rolled_back = True
                 self.rollbacks += 1

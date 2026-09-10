@@ -76,8 +76,12 @@ class Chat:
         self.cfg.tier = tier
         self.model = RSMA(self.cfg).to(device).eval()
         self.model.load_state_dict(ck["model"])
-        self.ds = CharText(seq_len=self.cfg.seq_len, device=device, corpus=meta["args"].get("corpus"),
-                           vocab_chars=meta.get("vocab_chars"))
+        if meta["args"].get("task") == "tokens":
+            from .data.tokens import TokenText
+            self.ds = TokenText(seq_len=self.cfg.seq_len, sources={"malcolmx": 1.0}, device=device)
+        else:
+            self.ds = CharText(seq_len=self.cfg.seq_len, device=device, corpus=meta["args"].get("corpus"),
+                               vocab_chars=meta.get("vocab_chars"))
         self.device = device
         self.tol = rollback_tol
         self.consolidate_every = consolidate_every
@@ -118,13 +122,13 @@ class Chat:
         snapshot = self.model.clone_state(self.state.fast)
         _, new_state, aux = self.model(x, self.state.fast, targets=y)
         actual = aux["lm_loss"].item()
-        forecast = aux["pred_loss"][:, -1].item()
+        forecast = aux["pred_benefit"][:, -1].item()
         rolled = False
         if self.state.ema_loss is None:
             self.state.ema_loss = actual
         if self.cfg.tier >= 2:
             without = self.model.forecast(snapshot, aux["pooled_last"]).item()
-            if forecast > without * (1 + self.tol):
+            if forecast < without - self.tol:
                 new_state = snapshot
                 rolled = True
                 self.state.rollbacks += 1

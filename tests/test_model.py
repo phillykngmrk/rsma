@@ -17,7 +17,10 @@ def test_shapes_and_loss():
     assert logits.shape == (3, 32, 16)
     assert len(state) == 1 and state[0].shape == (3, 2, 3 * 16 + 1, 16)
     assert aux["chunk_loss"].shape == (3, 4)
-    assert aux["pred_loss"].shape == (3, 5)
+    assert aux["pred_benefit"].shape == (3, 5)
+    ref = torch.rand(3, 4)
+    _, _, aux2 = m(x, targets=x, ref_chunk_loss=ref)
+    assert torch.allclose(aux2["benefit"], ref - aux2["chunk_loss"])
     assert torch.isfinite(aux["loss"])
     aux["loss"].backward()
 
@@ -58,7 +61,7 @@ def test_no_fast_baseline():
     m = RSMA(cfg)
     x = torch.randint(0, 16, (2, 32))
     logits, state, aux = m(x, targets=x)
-    assert state == [] and "pred_loss" not in aux
+    assert state == [] and "pred_benefit" not in aux
     aux["loss"].backward()
 
 

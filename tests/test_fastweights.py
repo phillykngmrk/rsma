@@ -17,6 +17,11 @@ def test_chunked_matches_sequential_delta_rule():
     (with q, k, beta computed from the chunk-start matrix)."""
     torch.manual_seed(0)
     cfg = RSMAConfig(d_model=32, fast_heads=2, chunk_size=8, fast_max_norm=1e9, use_gate=False)
+    _check_sequential(cfg)
+    _check_sequential(RSMAConfig(d_model=32, fast_heads=2, chunk_size=8, fast_max_norm=1e9, use_gate=False, fast_direct_value=False))
+
+
+def _check_sequential(cfg):
     fl = SelfReferentialFastWeights(cfg, 0).eval()
     x = torch.randn(1, 8, 32)
     delta0 = torch.randn(1, 2, fl.R, fl.d) * 0.05
@@ -35,7 +40,10 @@ def test_chunked_matches_sequential_delta_rule():
         v = torch.einsum("bhrd,bhd->bhr", Wt, pq[:, t])
         vb = torch.einsum("bhrd,bhd->bhr", Wt, pk[:, t])
         ys.append(v[..., :d])
-        u = lr[:, t] * (v - vb)                                   # (B, H, R)
+        tgt = v
+        if fl.Wv is not None:
+            tgt = tgt + torch.einsum("hrd,bhd->bhr", fl.Wv, xn[:, t])
+        u = lr[:, t] * (tgt - vb)                                 # (B, H, R)
         Wt = Wt + torch.einsum("bhr,bhd->bhrd", u, pk[:, t])
     y_seq = fl.out(torch.stack(ys, dim=1).reshape(1, 8, 32))
     assert torch.allclose(y_chunk, y_seq, atol=1e-4), (y_chunk - y_seq).abs().max()

@@ -4,7 +4,7 @@ sublayer, plus a self-model that gates the self-modification and predicts its co
 
 forward(tokens, state) -> logits, new_state, aux
   state: list of fast deltas, one per fast layer, or None to start fresh
-  aux:   lm_loss, sm_loss, chunk_loss (B,C), pred_loss (B,C), gates, delta_norms
+  aux:   lm_loss, sm_loss, chunk_loss (B,C), pred_benefit (B,C+1), benefit (B,C), gates, delta_norms
 """
 import copy
 import torch
@@ -116,7 +116,12 @@ class RSMA(nn.Module):
         return sum(p.numel() for p in self.parameters() if p.requires_grad or not trainable_only)
 
     # ---- forward ----------------------------------------------------------------------------
-    def forward(self, tokens, state=None, targets=None):
+    def forward(self, tokens, state=None, targets=None, ref_chunk_loss=None):
+        """
+        ref_chunk_loss: optional (B, n_chunks) per-chunk loss of the same tokens with the fast
+        state reset. When given, the self-model is trained to forecast ref - actual, the benefit
+        of the carried state. When absent the benefit target is zero (true for a fresh state).
+        """
         B, T = tokens.shape
         dev = tokens.device
         C = self.cfg.chunk_size
@@ -154,11 +159,13 @@ class RSMA(nn.Module):
                 # pooled hidden of the previous chunk; zeros before chunk 0
                 pooled = h.view(B, n_chunks, C, -1).mean(2)
                 pooled_prev = torch.cat([torch.zeros_like(pooled[:, :1]), pooled], dim=1)  # (B, n_chunks+1, D)
-                pred = self.selfmodel.predict_loss(encs.detach(), pooled_prev.detach())  # (B, n_chunks+1)
-                aux["pred_loss"] = pred            # pred[:, c] is the predicted loss of chunk c; pred[:, -1] is the forecast for the next sequence's first chunk
+                pred = self.selfmodel.predict_benefit(encs.detach(), pooled_prev.detach())  # (B, n_chunks+1)
+                aux["pred_benefit"] = pred      # pred[:, c]: forecast benefit of the state on chunk c; pred[:, -1]: forecast for what comes next
                 aux["pooled_last"] = pooled[:, -1].detach()
                 if targets is not None:
-                    aux["sm_loss"] = F.mse_loss(pred[:, :n_chunks], chunk_loss.detach())
+                    tgt = (ref_chunk_loss - chunk_loss).detach() if ref_chunk_loss is not None else torch.zeros_like(chunk_loss)
+                    aux["benefit"] = tgt
+                    aux["sm_loss"] = F.huber_loss(pred[:, :n_chunks], tgt, delta=0.5)
 
         if targets is not None:
             total = aux["lm_loss"]
@@ -169,12 +176,12 @@ class RSMA(nn.Module):
 
     @torch.no_grad()
     def forecast(self, state, pooled_last):
-        """Self-model forecast of next-chunk loss for an arbitrary fast state (B,) - used for
-        counterfactual comparison of a modification against the state before it."""
+        """Self-model forecast (B,) of the benefit of an arbitrary fast state on the next chunk.
+        Used to compare a modification against the state before it."""
         if self.selfmodel is None:
             return None
         encs = torch.stack([self.selfmodel.encode(d, i) for i, d in enumerate(state)], dim=1)  # (B, n_fast, hid)
-        return self.selfmodel.predict_loss(encs[:, None], pooled_last[:, None])[:, 0]
+        return self.selfmodel.predict_benefit(encs[:, None], pooled_last[:, None])[:, 0]
 
     @torch.no_grad()
     def generate(self, tokens, state=None, max_new=64, temperature=1.0):

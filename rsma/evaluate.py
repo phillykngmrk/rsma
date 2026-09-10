@@ -60,18 +60,16 @@ def adaptation_curve(model, data, batches=8, batch=32, windows=((0, 8), (8, 32),
 
 @torch.no_grad()
 def selfmodel_calibration(model, get_batch, n=8):
+    """Kept for API compatibility: the self-model is now evaluated inside stream_eval (benefit forecast)."""
     ps, as_ = [], []
     for _ in range(n):
         x, y = get_batch()
         _, _, aux = model(x, targets=y)
-        if "pred_loss" not in aux:
+        if "pred_benefit" not in aux:
             return None
-        C = aux["chunk_loss"].shape[1]
-        ps.append(aux["pred_loss"][:, :C].flatten().cpu())
         as_.append(aux["chunk_loss"].flatten().cpu())
-    p, a = torch.cat(ps), torch.cat(as_)
-    corr = torch.corrcoef(torch.stack([p, a]))[0, 1].item()
-    return {"corr": corr, "mae": (p - a).abs().mean().item(), "pred_mean": p.mean().item(), "actual_mean": a.mean().item()}
+    a = torch.cat(as_)
+    return {"actual_mean": a.mean().item()}
 
 
 def main():
@@ -115,7 +113,11 @@ def main():
                 yield x, y
         holdout = [data.batch(16)[:2] for _ in range(2)]
     else:
-        ds = CharText(seq_len=targs["seq_len"], seed=7, device=device, corpus=targs.get("corpus"), vocab_chars=targs.get("_vocab_chars"))
+        if task == "tokens":
+            from .data.tokens import TokenText
+            ds = TokenText(seq_len=targs["seq_len"], sources={"malcolmx": 1.0}, seed=7, device=device)
+        else:
+            ds = CharText(seq_len=targs["seq_len"], seed=7, device=device, corpus=targs.get("corpus"), vocab_chars=targs.get("_vocab_chars"))
         report["selfmodel"] = selfmodel_calibration(model, lambda: ds.batch(32, "val"))
         report["memory"] = stream_eval(model, ds, sa, n_streams=8)
         report["val_loss"] = selfmodel_calibration(model, lambda: ds.batch(32, "val"))["actual_mean"] if report["selfmodel"] else None

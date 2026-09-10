@@ -21,6 +21,7 @@ class RSMAConfig:
     fast_beta_init: float = -1.0  # bias on beta; sigmoid(-1) ~ 0.27 initial rate
     fast_w0_std: float = 0.1      # init scale of the slow fast-weight matrix W0
     fast_max_norm: float = 8.0    # per-head Frobenius clip on the fast delta
+    fast_direct_value: bool = True  # write target includes a direct projection of the input
 
     # self-model
     use_gate: bool = True
