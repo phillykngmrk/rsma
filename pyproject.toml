@@ -1,0 +1,9 @@
+[project]
+name = "rsma"
+version = "0.1.0"
+description = "Recursive Self-Modeling Architecture: a self-modifying transformer with self-referential fast weights, a self-model gate, and consolidation into slow weights."
+requires-python = ">=3.11"
+dependencies = ["torch>=2.4", "numpy", "tqdm"]
+
+[tool.setuptools]
+packages = ["rsma", "rsma.data"]
