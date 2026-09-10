@@ -18,7 +18,7 @@ class RSMAConfig:
     fast_heads: int = 4
     chunk_size: int = 16          # tokens per fast-weight update step
     fast_lr_scale: float = 1.0    # multiplies sigmoid(beta)
-    fast_beta_init: float = 0.0   # bias on beta; sigmoid(0) = 0.5 initial rate
+    fast_beta_init: float = -1.0  # bias on beta; sigmoid(-1) ~ 0.27 initial rate
     fast_w0_std: float = 0.1      # init scale of the slow fast-weight matrix W0
     fast_max_norm: float = 8.0    # per-head Frobenius clip on the fast delta
 
