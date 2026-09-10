@@ -34,7 +34,7 @@ def make_data(args, device):
         val = RuleSwitchMarkov(vocab=args.vocab, seq_len=args.seq_len, n_switches=args.n_switches, seed=args.seed + 1000, device=device)
         vocab = args.vocab
         return train, val, vocab
-    ds = CharText(seq_len=args.seq_len, seed=args.seed, device=device)
+    ds = CharText(seq_len=args.seq_len, seed=args.seed, device=device, corpus=args.corpus)
     return ds, ds, ds.vocab
 
 
@@ -78,6 +78,7 @@ def main():
     ap.add_argument("--heads", type=int, default=4)
     ap.add_argument("--fast-layers", default="1,3,5")
     ap.add_argument("--vocab", type=int, default=32)
+    ap.add_argument("--corpus", default=None, help="path to a UTF-8 text file for --task text")
     ap.add_argument("--n-switches", type=int, default=1)
     ap.add_argument("--tier", type=int, default=1)
     ap.add_argument("--no-fast", action="store_true")
@@ -110,7 +111,10 @@ def main():
 
     run_dir = os.path.join("runs", args.name)
     os.makedirs(run_dir, exist_ok=True)
-    json.dump({"cfg": cfg.to_dict(), "args": vars(args)}, open(os.path.join(run_dir, "config.json"), "w"), indent=1)
+    meta = {"cfg": cfg.to_dict(), "args": vars(args)}
+    if args.task == "text":
+        meta["vocab_chars"] = train_data.itos
+    json.dump(meta, open(os.path.join(run_dir, "config.json"), "w"), indent=1)
     log = open(os.path.join(run_dir, "log.jsonl"), "w")
 
     model.train()

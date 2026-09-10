@@ -37,3 +37,34 @@ def consolidate(model, state, holdout_batches, eta=1.0, tol=0.02):
     fresh = [torch.zeros_like(d) for d in state]
     merged_norm = sum(d.mean(0).norm().item() for d in state)
     return {"before": before, "after": after, "accepted": accepted, "merged_norm": merged_norm, "state": fresh}
+
+
+def sleep(model, recent_batches, replay_batches, holdout_batches, steps=20, lr=1e-4, tol=0.02):
+    """
+    Gradient consolidation. Fine-tune the slow weights on recent experience mixed with replay
+    from the original corpus, then verify on held-out data and revert if it regressed.
+    recent_batches / replay_batches: lists of (x, y). Interleaved round-robin.
+    """
+    if not recent_batches:
+        return {"skipped": True}
+    before = holdout_loss(model, holdout_batches, None)
+    backup = {k: v.detach().clone() for k, v in model.state_dict().items()}
+    opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.0)
+    model.train()
+    losses = []
+    for i in range(steps):
+        src = recent_batches if (i % 2 == 0 or not replay_batches) else replay_batches
+        x, y = src[(i // 2) % len(src)]
+        _, _, aux = model(x, None, targets=y)
+        opt.zero_grad(set_to_none=True)
+        aux["loss"].backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        opt.step()
+        losses.append(aux["lm_loss"].item())
+    model.eval()
+    after = holdout_loss(model, holdout_batches, None)
+    accepted = after <= before * (1.0 + tol)
+    if not accepted:
+        model.load_state_dict(backup)
+    return {"before": before, "after": after, "accepted": accepted, "steps": steps,
+            "train_loss_first": losses[0], "train_loss_last": losses[-1]}

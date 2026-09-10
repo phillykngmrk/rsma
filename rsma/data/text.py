@@ -7,13 +7,16 @@ URL = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshake
 
 
 class CharText:
-    def __init__(self, seq_len=256, cache_dir="data_cache", split=0.9, seed=0, device="cpu"):
+    def __init__(self, seq_len=256, cache_dir="data_cache", split=0.9, seed=0, device="cpu", corpus=None, vocab_chars=None):
         os.makedirs(cache_dir, exist_ok=True)
-        path = os.path.join(cache_dir, "tinyshakespeare.txt")
+        path = corpus or os.path.join(cache_dir, "tinyshakespeare.txt")
         if not os.path.exists(path):
             urllib.request.urlretrieve(URL, path)
         text = open(path, encoding="utf-8").read()
-        chars = sorted(set(text))
+        chars = list(vocab_chars) if vocab_chars else sorted(set(text))
+        if vocab_chars:
+            keep = set(chars)
+            text = "".join(c for c in text if c in keep)
         self.stoi = {c: i for i, c in enumerate(chars)}
         self.itos = chars
         self.vocab = len(chars)
@@ -43,3 +46,6 @@ class CharText:
 
     def decode(self, ids):
         return "".join(self.itos[i] for i in ids)
+
+    def encode(self, s):
+        return [self.stoi[c] for c in s if c in self.stoi]
