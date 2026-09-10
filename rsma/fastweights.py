@@ -3,16 +3,18 @@ Self-referential fast weights (after Irie, Schlag, Csordas, Schmidhuber 2022).
 
 Each head owns a matrix W of shape (R, d) with R = 3d + 1. Given input x:
 
-    [y, q, k, beta] = W x
-
-The matrix then rewrites itself so that it maps phi(k) to what it currently maps phi(q) to:
-
-    v     = W phi(q)
+    [_, q, k, beta] = W x          phi(z) = z / |z|
+    v     = W phi(q)               the read: what the matrix currently associates with the query
     v_bar = W phi(k)
     W    <- W + gate * sigmoid(beta) * (v - v_bar) phi(k)^T
+    y     = v[:d]                  the output is the first d rows of the retrieved vector
 
-Every quantity in the update, including the query, key and learning rate, is produced by W
-itself. W = W0 + delta, where W0 is a trained slow parameter and delta is the fast state.
+The matrix rewrites itself so that it maps phi(k) to what it currently maps phi(q) to. Every
+quantity, including the query, key and learning rate, is produced by W itself, and the rows
+that produce them are rewritten too. W = W0 + delta: W0 is a trained slow parameter, delta is
+the fast state. Reading through a unit-norm query is what makes stored associations
+retrievable; reading with the raw input does not, because a layer-normed input is orthogonal
+to near-uniform keys.
 
 Updates are applied per chunk: within a chunk W is frozen, the chunk's updates are summed.
 """
@@ -70,12 +72,12 @@ class SelfReferentialFastWeights(nn.Module):
             xc = xn[:, c * C:(c + 1) * C]                     # (B, C, H, d)
             W = self.W0.unsqueeze(0) + delta                   # (B, H, R, d)
             o = torch.einsum("bhrd,bthd->bthr", W, xc)         # (B, C, H, R)
-            y, q, k, beta = torch.split(o, [d, d, d, 1], dim=-1)
-            ys.append(y)
-            phi_q = F.softmax(q, dim=-1)
-            phi_k = F.softmax(k, dim=-1)
-            v = torch.einsum("bhrd,bthd->bthr", W, phi_q)
+            _, q, k, beta = torch.split(o, [d, d, d, 1], dim=-1)
+            phi_q = F.normalize(q, dim=-1)
+            phi_k = F.normalize(k, dim=-1)
+            v = torch.einsum("bhrd,bthd->bthr", W, phi_q)      # read
             v_bar = torch.einsum("bhrd,bthd->bthr", W, phi_k)
+            ys.append(v[..., :d])
             lr = torch.sigmoid(beta + self.beta_bias[None, None, :, None]) * self.cfg.fast_lr_scale
             upd = torch.einsum("bthr,bthd->bhrd", lr * (v - v_bar), phi_k)
             if selfmodel is not None and self.cfg.use_gate:
