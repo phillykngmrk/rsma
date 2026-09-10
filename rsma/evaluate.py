@@ -17,6 +17,7 @@ import torch
 
 from .config import RSMAConfig
 from .model import RSMA
+from .checkpoint import load_run
 from .data.synthetic import RuleSwitchMarkov
 from .data.text import CharText
 from .runtime import SelfModifyingRuntime
@@ -24,11 +25,7 @@ from .train import get_device, stream_eval
 
 
 def load(run, device):
-    ck = torch.load(os.path.join("runs", run, "ckpt.pt"), map_location=device)
-    cfg = RSMAConfig.from_dict(ck["cfg"])
-    m = RSMA(cfg).to(device)
-    m.load_state_dict(ck["model"])
-    m.eval()
+    m, cfg, ck = load_run(run, device)
     meta = json.load(open(os.path.join("runs", run, "config.json")))
     args = meta["args"]
     args["_vocab_chars"] = meta.get("vocab_chars")

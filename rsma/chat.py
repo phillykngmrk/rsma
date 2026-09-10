@@ -28,6 +28,7 @@ import torch
 
 from .config import RSMAConfig
 from .model import RSMA
+from .checkpoint import load_run
 from .data.text import CharText
 from .consolidate import consolidate, sleep
 from .train import get_device
@@ -70,12 +71,9 @@ class Chat:
                  user_label="Question", model_label="Malcolm X"):
         self.user_label, self.model_label = user_label, model_label
         self.run_dir = os.path.join("runs", run)
-        ck = torch.load(os.path.join(self.run_dir, "ckpt.pt"), map_location=device)
         meta = json.load(open(os.path.join(self.run_dir, "config.json")))
-        self.cfg = RSMAConfig.from_dict(ck["cfg"])
+        self.model, self.cfg, _ = load_run(run, device)
         self.cfg.tier = tier
-        self.model = RSMA(self.cfg).to(device).eval()
-        self.model.load_state_dict(ck["model"])
         if meta["args"].get("task") == "tokens":
             from .data.tokens import TokenText
             self.ds = TokenText(seq_len=self.cfg.seq_len, sources={"malcolmx": 1.0}, device=device)
