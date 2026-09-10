@@ -168,21 +168,33 @@ def main():
 
     model.train()
     t0 = time.time()
-    windows = window_iter(train_data, args)
-    state = None
     for step in range(1, args.steps + 1):
         for g in opt.param_groups:
             g["lr"] = lr_at(step)
-        x, y, first = next(windows)
-        if first:
-            state = None
-        _, new_state, aux = model(x, state, targets=y)
-        state = model.clone_state(new_state) if new_state else None
         opt.zero_grad(set_to_none=True)
-        aux["loss"].backward()
+        if args.stream > 1:
+            # one step = one stream. Fast state is carried across windows WITH gradient, so the
+            # loss on later windows teaches the model what to write into its weights earlier.
+            state, total, auxs = None, 0.0, []
+            for x, y in stream_windows(train_data, args):
+                _, state, aux = model(x, state, targets=y)
+                total = total + aux["loss"]
+                auxs.append(aux)
+            (total / len(auxs)).backward()
+            aux = {"lm_loss": torch.stack([a["lm_loss"] for a in auxs]).mean()}
+            if "sm_loss" in auxs[0]:
+                aux["sm_loss"] = torch.stack([a["sm_loss"] for a in auxs]).mean()
+                aux["gates"] = auxs[-1]["gates"]
+                aux["delta_norms"] = auxs[-1]["delta_norms"]
+        else:
+            x, y = next_batch(train_data, args)
+            _, _, aux = model(x, targets=y)
+            aux["loss"].backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
         rec = {"step": step, "lm": aux["lm_loss"].item(), "lr": lr_at(step)}
+        if args.stream > 1:
+            rec["windows"] = step * args.stream
         if "sm_loss" in aux:
             rec["sm"] = aux["sm_loss"].item()
             rec["gate"] = torch.stack([g.mean() for g in aux["gates"]]).mean().item()
