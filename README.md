@@ -51,11 +51,14 @@ scripts/           run scripts
 .venv/bin/python -m rsma.train --task synthetic --name syn_nofast --no-fast
 .venv/bin/python -m rsma.evaluate --run syn_fast --baseline syn_nofast --stream 40 --tier 3
 
-# train the text model (defaults to TinyShakespeare; pass --corpus yourfile.txt for your own text)
-.venv/bin/python -m rsma.train --task text --name text_fast --steps 4000
+# build the Malcolm X corpus (collected speeches, debates and interviews 1960-1965)
+.venv/bin/pip install pypdf && .venv/bin/python scripts/build_malcolmx_corpus.py
 
-# talk to it. Fast weights persist in runs/text_fast/self/, consolidation rewrites ckpt.pt
-.venv/bin/python -m rsma.chat --run text_fast --tier 3
+# train the text model on it (any UTF-8 file works with --corpus)
+.venv/bin/python -m rsma.train --task text --corpus data_cache/malcolmx.txt --name malcolmx --steps 5000
+
+# talk to it. Fast weights persist in runs/malcolmx/self/, consolidation rewrites ckpt.pt
+.venv/bin/python -m rsma.chat --run malcolmx --tier 3
 ```
 
 Chat commands: `/status`, `/consolidate`, `/sleep`, `/reset`, `/freeze`, `/save`, `/quit`.
