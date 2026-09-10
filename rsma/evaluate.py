@@ -100,7 +100,10 @@ def main():
             data_b = RuleSwitchMarkov(vocab=targs["vocab"], seq_len=targs["seq_len"], n_switches=targs["n_switches"], seed=4242, device=device)
             report["baseline_adaptation"], curve_b = adaptation_curve(base, data_b)
             torch.save(curve_b, os.path.join("runs", args.baseline, "adaptation_curve.pt"))
-        stream_src = lambda n: ((data.batch(1)[0], data.batch(1)[1]) for _ in range(n))
+        def stream_src(n):
+            for _ in range(n):
+                x, y, _ = data.batch(1)
+                yield x, y
         holdout = [data.batch(16)[:2] for _ in range(2)]
     else:
         ds = CharText(seq_len=targs["seq_len"], seed=7, device=device)
