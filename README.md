@@ -80,6 +80,29 @@ python3 -m venv .venv
 
 ## Results so far (2026-09-10)
 
+### Second architecture: direct value path, forget gate, benefit-forecasting self-model
+
+Same synthetic task and training regime as below (5.5M parameters, 4-window streams).
+
+| Metric | v2 self-modifying, memory carried | v2, memory reset | v1, memory carried | frozen baseline |
+|---|---|---|---|---|
+| loss on windows 2-4 | **1.924** | 2.280 | 2.179 | 2.194 |
+| loss on first 32 tokens of windows 2-4 | **2.106** | 3.009 | 2.990 | 3.006 |
+| self-model forecast correlation | **0.57** | | ~0.02 | |
+
+The early-token gap went from 0.02 to 0.90 nats: the model now carries the current rule across
+the attention window and reads it back almost immediately. The self-model's forecast of how much
+the memory will help correlates at 0.57 with the measured benefit, up from chance. The
+in-context learning transition also arrived 500 steps earlier.
+
+What changed: the write target is now the read plus a direct projection of the input (v1 could
+only store what it already read back); the self-model controls a per-head forget rate as well
+as the write rate; and the self-model predicts the benefit of the carried state (loss reset
+minus loss carried, measured with a second forward pass) instead of absolute loss.
+
+### First architecture
+
+
 Synthetic rule-switch task, 5.3M parameters, trained on streams of 4 windows with the fast
 state carried across windows and gradient flowing through the whole stream. The frozen
 baseline has the same architecture with the fast-weight sublayers removed.
