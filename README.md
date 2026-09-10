@@ -70,3 +70,28 @@ python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m pytest tests
 ```
+
+## Results so far (2026-09-10)
+
+Synthetic rule-switch task, 5.3M parameters, trained on streams of 4 windows with the fast
+state carried across windows and gradient flowing through the whole stream.
+
+| Metric | with carried fast weights | fast weights reset |
+|---|---|---|
+| loss on windows 2-4 | 2.161 | 2.217 |
+| loss on first 32 tokens of windows 2-4 | 2.999 | 3.020 |
+
+The model stores something about the current rule in its own weights and reads it back after
+the attention window has moved on. The effect is consistent but small against the roughly one
+nat available, so writing is still the weak link.
+
+The self-model's gate closed from 0.96 to 0.43 at the moment in-context learning emerged. Its
+loss forecast is near chance on this task because switches cannot be predicted from the past.
+
+Tier 3 on a 24-sequence stream: three consolidations, the first improved held-out loss
+(2.537 to 2.503), the next two regressed slightly. Acceptance is now strict (no regression).
+
+Three bugs had to be fixed before any of this worked, each confirmed by a diagnostic first:
+softmax keys were orthogonal to the layer-normed input (stored deltas changed outputs by ~1%);
+summed per-chunk updates over-corrected and collapsed the delta to rank one; and detaching
+state between windows removed the learning signal for what to write.
