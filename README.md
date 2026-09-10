@@ -43,6 +43,23 @@ tests/             unit tests
 scripts/           run scripts
 ```
 
+## Workflow
+
+```
+# validate the mechanism on the rule-switch task: self-modifying vs frozen
+.venv/bin/python -m rsma.train --task synthetic --name syn_fast
+.venv/bin/python -m rsma.train --task synthetic --name syn_nofast --no-fast
+.venv/bin/python -m rsma.evaluate --run syn_fast --baseline syn_nofast --stream 40 --tier 3
+
+# train the text model (defaults to TinyShakespeare; pass --corpus yourfile.txt for your own text)
+.venv/bin/python -m rsma.train --task text --name text_fast --steps 4000
+
+# talk to it. Fast weights persist in runs/text_fast/self/, consolidation rewrites ckpt.pt
+.venv/bin/python -m rsma.chat --run text_fast --tier 3
+```
+
+Chat commands: `/status`, `/consolidate`, `/sleep`, `/reset`, `/freeze`, `/save`, `/quit`.
+
 ## Setup
 
 ```
