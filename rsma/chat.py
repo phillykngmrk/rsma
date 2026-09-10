@@ -21,6 +21,7 @@ Commands:
 import argparse
 import json
 import os
+import re
 import time
 
 import torch
@@ -65,7 +66,7 @@ class SelfState:
 
 
 class Chat:
-    def __init__(self, run, device, tier=3, rollback_tol=0.15, consolidate_every=8, temperature=0.8, max_new=200,
+    def __init__(self, run, device, tier=3, rollback_tol=0.02, consolidate_every=8, temperature=0.8, max_new=200,
                  user_label="Question", model_label="Malcolm X"):
         self.user_label, self.model_label = user_label, model_label
         self.run_dir = os.path.join("runs", run)
@@ -121,10 +122,12 @@ class Chat:
         rolled = False
         if self.state.ema_loss is None:
             self.state.ema_loss = actual
-        elif self.cfg.tier >= 2 and forecast > self.state.ema_loss * (1 + self.tol):
-            new_state = snapshot
-            rolled = True
-            self.state.rollbacks += 1
+        if self.cfg.tier >= 2:
+            without = self.model.forecast(snapshot, aux["pooled_last"]).item()
+            if forecast > without * (1 + self.tol):
+                new_state = snapshot
+                rolled = True
+                self.state.rollbacks += 1
         self.state.ema_loss = 0.9 * self.state.ema_loss + 0.1 * actual
         self.state.fast = new_state
         return {"learned": len(window), "loss": actual, "forecast": forecast, "rolled_back": rolled,
@@ -137,8 +140,8 @@ class Chat:
         gen = out[0, ctx.shape[1]:].tolist()
         text = self.ds.decode(gen)
         # stop at the end of the model's turn if it starts another speaker's line
-        cuts = [i for i in (text.find(f"\n{self.user_label}:"), text.find(f"\n{self.model_label}:")) if i >= 0]
-        return text[:min(cuts)] if cuts else text
+        m = re.search(r"\n[A-Z][A-Za-z. ]{1,25}:", text)
+        return text[:m.start()] if m else text
 
     def conversation_holdout(self):
         """The most recent full window of conversation, held out from sleep training."""
@@ -152,8 +155,8 @@ class Chat:
         return [(x, y)]
 
     def do_consolidate(self):
-        if self.state.fast is None:
-            return {"skipped": True}
+        if self.state.fast is None or sum(d.norm().item() for d in self.state.fast) < 1e-6:
+            return {"skipped": True, "reason": "no fast-weight changes to merge"}
         res = consolidate(self.model, self.state.fast, self.holdout, tol=0.0, conv_batches=self.conversation_holdout())
         self.state.fast = res.pop("state")
         res["kind"] = "merge"

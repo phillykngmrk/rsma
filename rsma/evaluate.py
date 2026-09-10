@@ -29,7 +29,9 @@ def load(run, device):
     m = RSMA(cfg).to(device)
     m.load_state_dict(ck["model"])
     m.eval()
-    args = json.load(open(os.path.join("runs", run, "config.json")))["args"]
+    meta = json.load(open(os.path.join("runs", run, "config.json")))
+    args = meta["args"]
+    args["_vocab_chars"] = meta.get("vocab_chars")
     return m, cfg, args
 
 
@@ -113,7 +115,7 @@ def main():
                 yield x, y
         holdout = [data.batch(16)[:2] for _ in range(2)]
     else:
-        ds = CharText(seq_len=targs["seq_len"], seed=7, device=device)
+        ds = CharText(seq_len=targs["seq_len"], seed=7, device=device, corpus=targs.get("corpus"), vocab_chars=targs.get("_vocab_chars"))
         report["selfmodel"] = selfmodel_calibration(model, lambda: ds.batch(32, "val"))
         report["memory"] = stream_eval(model, ds, sa, n_streams=8)
         report["val_loss"] = selfmodel_calibration(model, lambda: ds.batch(32, "val"))["actual_mean"] if report["selfmodel"] else None

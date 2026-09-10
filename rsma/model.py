@@ -156,6 +156,7 @@ class RSMA(nn.Module):
                 pooled_prev = torch.cat([torch.zeros_like(pooled[:, :1]), pooled], dim=1)  # (B, n_chunks+1, D)
                 pred = self.selfmodel.predict_loss(encs.detach(), pooled_prev.detach())  # (B, n_chunks+1)
                 aux["pred_loss"] = pred            # pred[:, c] is the predicted loss of chunk c; pred[:, -1] is the forecast for the next sequence's first chunk
+                aux["pooled_last"] = pooled[:, -1].detach()
                 if targets is not None:
                     aux["sm_loss"] = F.mse_loss(pred[:, :n_chunks], chunk_loss.detach())
 
@@ -165,6 +166,15 @@ class RSMA(nn.Module):
                 total = total + self.cfg.selfmodel_loss_weight * aux["sm_loss"]
             aux["loss"] = total
         return logits, new_state, aux
+
+    @torch.no_grad()
+    def forecast(self, state, pooled_last):
+        """Self-model forecast of next-chunk loss for an arbitrary fast state (B,) - used for
+        counterfactual comparison of a modification against the state before it."""
+        if self.selfmodel is None:
+            return None
+        encs = torch.stack([self.selfmodel.encode(d, i) for i, d in enumerate(state)], dim=1)  # (B, n_fast, hid)
+        return self.selfmodel.predict_loss(encs[:, None], pooled_last[:, None])[:, 0]
 
     @torch.no_grad()
     def generate(self, tokens, state=None, max_new=64, temperature=1.0):

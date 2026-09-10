@@ -8,7 +8,7 @@ from .consolidate import consolidate
 
 
 class SelfModifyingRuntime:
-    def __init__(self, model, holdout_batches=None, tol=0.15, ema=0.95,
+    def __init__(self, model, holdout_batches=None, tol=0.02, ema=0.95,
                  consolidate_every=50, consolidate_eta=1.0, consolidate_tol=0.0, device="cpu"):
         self.model = model
         self.cfg = model.cfg
@@ -40,11 +40,14 @@ class SelfModifyingRuntime:
         rolled_back = False
         if self.ema_loss is None:
             self.ema_loss = actual
-        elif self.tier >= 2 and forecast > self.ema_loss * (1.0 + self.tol):
-            # the self-model expects this modification to hurt: discard it
-            new_state = snapshot
-            rolled_back = True
-            self.rollbacks += 1
+        if self.tier >= 2 and "pred_loss" in aux:
+            # counterfactual: does the self-model expect the modified state to do worse than the
+            # state before this sequence? If so, discard the modification.
+            without = self.model.forecast(snapshot, aux["pooled_last"]).mean().item()
+            if forecast > without * (1.0 + self.tol):
+                new_state = snapshot
+                rolled_back = True
+                self.rollbacks += 1
         self.ema_loss = self.ema_decay * self.ema_loss + (1 - self.ema_decay) * actual
         self.state = new_state
         self.step_count += 1

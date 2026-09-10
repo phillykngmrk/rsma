@@ -63,6 +63,13 @@ scripts/           run scripts
 
 Chat commands: `/status`, `/consolidate`, `/sleep`, `/reset`, `/freeze`, `/save`, `/quit`.
 
+The chat uses the corpus's own interview labels, `Question:` for you and `Malcolm X:` for the
+model (override with `--user-label` / `--model-label`). Each turn passes through the model with
+persistent fast weights. A modification is rolled back when the self-model forecasts a higher loss
+with it than without it. Every 8 turns the fast weights are merged into the slow weights if that
+does not regress a held-out mix of corpus and recent conversation; an accepted merge rewrites
+`ckpt.pt`. `scripts/chat_smoke.py` exercises the whole loop without a terminal.
+
 ## Setup
 
 ```
