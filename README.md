@@ -81,12 +81,17 @@ python3 -m venv .venv
 ## Results so far (2026-09-10)
 
 Synthetic rule-switch task, 5.3M parameters, trained on streams of 4 windows with the fast
-state carried across windows and gradient flowing through the whole stream.
+state carried across windows and gradient flowing through the whole stream. The frozen
+baseline has the same architecture with the fast-weight sublayers removed.
 
-| Metric | with carried fast weights | fast weights reset |
-|---|---|---|
-| loss on windows 2-4 | 2.161 | 2.217 |
-| loss on first 32 tokens of windows 2-4 | 2.999 | 3.020 |
+| Metric | self-modifying, state carried | self-modifying, state reset | frozen baseline |
+|---|---|---|---|
+| loss on windows 2-4 | 2.179 | 2.238 | 2.194 |
+| loss on first 32 tokens of windows 2-4 | 2.990 | 3.013 | 3.006 |
+| single-window validation loss | 2.502 | | 2.419 |
+
+With its memory the self-modifying model beats the frozen baseline by a small margin; without
+it, it is worse. The fast path costs some within-window accuracy and buys some cross-window memory.
 
 The model stores something about the current rule in its own weights and reads it back after
 the attention window has moved on. The effect is consistent but small against the roughly one
@@ -102,3 +107,9 @@ Three bugs had to be fixed before any of this worked, each confirmed by a diagno
 softmax keys were orthogonal to the layer-normed input (stored deltas changed outputs by ~1%);
 summed per-chunk updates over-corrected and collapsed the delta to rank one; and detaching
 state between windows removed the learning signal for what to write.
+
+Malcolm X text model (character level, 5.3M parameters, 2500 stream steps): validation loss
+1.18 nats per character. Carried state helps by only 0.003 on early tokens, so at this scale the
+memory is nearly inert on text. Three tier 3 consolidations on a 24-window stream: two accepted
+at quarter strength with tiny gains, one rejected. In the chat loop, merges of conversation-derived
+fast weights into the slow weights were accepted when they improved held-out conversation loss.
