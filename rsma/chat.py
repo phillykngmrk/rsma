@@ -65,7 +65,9 @@ class SelfState:
 
 
 class Chat:
-    def __init__(self, run, device, tier=3, rollback_tol=0.15, consolidate_every=8, temperature=0.8, max_new=200):
+    def __init__(self, run, device, tier=3, rollback_tol=0.15, consolidate_every=8, temperature=0.8, max_new=200,
+                 user_label="Question", model_label="Malcolm X"):
+        self.user_label, self.model_label = user_label, model_label
         self.run_dir = os.path.join("runs", run)
         ck = torch.load(os.path.join(self.run_dir, "ckpt.pt"), map_location=device)
         meta = json.load(open(os.path.join(self.run_dir, "config.json")))
@@ -134,14 +136,25 @@ class Chat:
         out = self.model.generate(ctx, self.state.fast, max_new=self.max_new, temperature=self.temperature)
         gen = out[0, ctx.shape[1]:].tolist()
         text = self.ds.decode(gen)
-        # stop at the end of the model's turn if it produces the user marker
-        cut = text.find("\nYou:")
-        return text if cut < 0 else text[:cut]
+        # stop at the end of the model's turn if it starts another speaker's line
+        cuts = [i for i in (text.find(f"\n{self.user_label}:"), text.find(f"\n{self.model_label}:")) if i >= 0]
+        return text[:min(cuts)] if cuts else text
+
+    def conversation_holdout(self):
+        """The most recent full window of conversation, held out from sleep training."""
+        T = self.cfg.seq_len
+        r = self.state.recent
+        if len(r) < T + 1:
+            return []
+        w = r[-T - 1:]
+        x = torch.tensor(w[:-1], device=self.device)[None]
+        y = torch.tensor(w[1:], device=self.device)[None]
+        return [(x, y)]
 
     def do_consolidate(self):
         if self.state.fast is None:
             return {"skipped": True}
-        res = consolidate(self.model, self.state.fast, self.holdout, eta=1.0, tol=0.0)
+        res = consolidate(self.model, self.state.fast, self.holdout, tol=0.0, conv_batches=self.conversation_holdout())
         self.state.fast = res.pop("state")
         res["kind"] = "merge"
         res["turn"] = self.state.turns
@@ -152,13 +165,13 @@ class Chat:
 
     def do_sleep(self, steps=20):
         T = self.cfg.seq_len
-        wins = self._chunks(self.state.recent[-T * 32:])
+        wins = self._chunks(self.state.recent[-T * 33:-T - 1])  # exclude the held-out window
         recent = []
         for w in wins:
             x = torch.tensor(w, device=self.device)[None]
             y = torch.tensor(w[1:] + [w[-1]], device=self.device)[None]
             recent.append((x, y))
-        res = sleep(self.model, recent, self.replay, self.holdout, steps=steps)
+        res = sleep(self.model, recent, self.replay, self.holdout + self.conversation_holdout(), steps=steps)
         res["kind"] = "sleep"
         res["turn"] = self.state.turns
         self.state.events.append(res)
@@ -185,7 +198,7 @@ class Chat:
         print(f"[tier {self.cfg.tier}, {self.model.n_params()/1e6:.2f}M params, device {self.device}]")
         while True:
             try:
-                user = input("You: ")
+                user = input(f"{self.user_label}: ")
             except (EOFError, KeyboardInterrupt):
                 print()
                 user = "/quit"
@@ -214,9 +227,9 @@ class Chat:
                 else:
                     print("[unknown command]")
                 continue
-            info = self.learn(f"\nYou: {user}\nModel:")
+            info = self.learn(f"\n{self.user_label}: {user}\n{self.model_label}:")
             answer = self.reply(self.transcript)
-            print(f"Model:{answer}")
+            print(f"{self.model_label}:{answer}")
             info2 = self.learn(answer + "\n")
             self.state.turns += 1
             tag = []
@@ -240,9 +253,12 @@ def main():
     ap.add_argument("--max-new", type=int, default=200)
     ap.add_argument("--consolidate-every", type=int, default=8)
     ap.add_argument("--device", default=None)
+    ap.add_argument("--user-label", default="Question", help="speaker label for your turns; matches the corpus interviews")
+    ap.add_argument("--model-label", default="Malcolm X")
     args = ap.parse_args()
     Chat(args.run, args.device or get_device(), tier=args.tier, temperature=args.temperature,
-         max_new=args.max_new, consolidate_every=args.consolidate_every).run()
+         max_new=args.max_new, consolidate_every=args.consolidate_every,
+         user_label=args.user_label, model_label=args.model_label).run()
 
 
 if __name__ == "__main__":

@@ -19,31 +19,49 @@ def holdout_loss(model, batches, state=None):
 
 
 @torch.no_grad()
-def consolidate(model, state, holdout_batches, eta=1.0, tol=0.0):
+def consolidate(model, state, holdout_batches, eta=1.0, tol=0.0, etas=(1.0, 0.5, 0.25), conv_batches=None):
     """
-    state: list of fast deltas (B, H, R, d). The batch dimension is averaged before merging.
-    Returns dict with before/after losses, accepted flag, and the reset state.
-
-    The held-out set is fixed, so its loss is deterministic and the default tolerance is zero:
-    a merge is kept only if it does not make the model worse. A positive tolerance lets small
-    regressions accumulate across repeated merges, which is a ratchet in the wrong direction.
+    Merge the fast deltas into the slow W0 of each fast layer, verified on held-out data.
+    state: list of fast deltas (B, H, R, d); the batch dimension is averaged before merging.
+    etas: merge strengths to try, largest first; the first that does not regress is kept.
+    conv_batches: optional held-out batches of recent conversation. When given, the verified
+      loss is the mean of corpus loss and conversation loss, so a merge that helps the model
+      remember the conversation can be accepted even if corpus loss is unchanged.
+    The held-out sets are fixed, so their loss is deterministic and the default tolerance is
+    zero: a merge is kept only if it does not make the model worse. A positive tolerance lets
+    small regressions accumulate across repeated merges.
     """
     fast_layers = model.fast_layers
-    before = holdout_loss(model, holdout_batches, None)
+
+    def verify():
+        l = holdout_loss(model, holdout_batches, None)
+        if conv_batches:
+            return 0.5 * l + 0.5 * holdout_loss(model, conv_batches, None), l
+        return l, l
+
+    before, before_corpus = verify()
     backup = [fl.W0.detach().clone() for fl in fast_layers]
-    for fl, delta in zip(fast_layers, state):
-        fl.W0.add_(eta * delta.mean(0))
-    after = holdout_loss(model, holdout_batches, None)
-    accepted = after <= before * (1.0 + tol)
+    means = [d.mean(0) for d in state]
+    tried = []
+    accepted, used_eta, after, after_corpus = False, None, before, before_corpus
+    for e in ([eta] if etas is None else etas):
+        for fl, w, dm in zip(fast_layers, backup, means):
+            fl.W0.copy_(w + e * dm)
+        a, ac = verify()
+        tried.append((e, round(a, 4)))
+        if a <= before * (1.0 + tol):
+            accepted, used_eta, after, after_corpus = True, e, a, ac
+            break
     if not accepted:
         for fl, w in zip(fast_layers, backup):
             fl.W0.copy_(w)
     fresh = [torch.zeros_like(d) for d in state]
-    merged_norm = sum(d.mean(0).norm().item() for d in state)
-    return {"before": before, "after": after, "accepted": accepted, "merged_norm": merged_norm, "state": fresh}
+    merged_norm = sum(dm.norm().item() for dm in means)
+    return {"before": before, "after": after, "before_corpus": before_corpus, "after_corpus": after_corpus,
+            "accepted": accepted, "eta": used_eta, "tried": tried, "merged_norm": merged_norm, "state": fresh}
 
 
-def sleep(model, recent_batches, replay_batches, holdout_batches, steps=20, lr=1e-4, tol=0.0):
+def sleep(model, recent_batches, replay_batches, holdout_batches, steps=20, lr=2e-5, tol=0.0):
     """
     Gradient consolidation. Fine-tune the slow weights on recent experience mixed with replay
     from the original corpus, then verify on held-out data and revert if it regressed.
