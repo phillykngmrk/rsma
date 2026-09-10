@@ -85,6 +85,11 @@ class RSMA(nn.Module):
         else:
             self.selfmodel = None
         self.apply(self._init)
+        # apply() above overwrote the submodules' deliberate inits; restore them
+        if self.selfmodel is not None:
+            self.selfmodel.reset_special_init()
+        for fl in self.fast_layers:
+            fl.reset_special_init()
 
     @staticmethod
     def _init(m):

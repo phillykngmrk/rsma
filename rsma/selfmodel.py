@@ -40,6 +40,9 @@ class SelfModel(nn.Module):
         self.predict = nn.Sequential(
             nn.Linear(n_fast_layers * hid + cfg.d_model, hid), nn.GELU(), nn.Linear(hid, 1)
         )
+        self.reset_special_init()
+
+    def reset_special_init(self):
         # open gate at init so training starts as a plain fast-weight model
         nn.init.zeros_(self.gate[-1].weight)
         nn.init.constant_(self.gate[-1].bias, 2.0)

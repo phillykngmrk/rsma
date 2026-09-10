@@ -37,8 +37,13 @@ class SelfReferentialFastWeights(nn.Module):
         self.beta_bias = nn.Parameter(torch.full((H,), cfg.fast_beta_init))
         self.ln = nn.LayerNorm(D)
         self.out = nn.Linear(D, D)
+        self.reset_special_init()
+
+    def reset_special_init(self):
         nn.init.zeros_(self.out.weight)  # sublayer starts as identity on the residual stream
         nn.init.zeros_(self.out.bias)
+        with torch.no_grad():
+            self.W0[:, -1, :].zero_()
 
     def init_state(self, batch: int, device) -> torch.Tensor:
         return torch.zeros(batch, self.H, self.R, self.d, device=device)
