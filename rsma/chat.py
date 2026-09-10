@@ -141,7 +141,7 @@ class Chat:
     def do_consolidate(self):
         if self.state.fast is None:
             return {"skipped": True}
-        res = consolidate(self.model, self.state.fast, self.holdout, eta=1.0, tol=0.02)
+        res = consolidate(self.model, self.state.fast, self.holdout, eta=1.0, tol=0.0)
         self.state.fast = res.pop("state")
         res["kind"] = "merge"
         res["turn"] = self.state.turns

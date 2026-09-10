@@ -9,7 +9,7 @@ from .consolidate import consolidate
 
 class SelfModifyingRuntime:
     def __init__(self, model, holdout_batches=None, tol=0.15, ema=0.95,
-                 consolidate_every=50, consolidate_eta=1.0, consolidate_tol=0.02, device="cpu"):
+                 consolidate_every=50, consolidate_eta=1.0, consolidate_tol=0.0, device="cpu"):
         self.model = model
         self.cfg = model.cfg
         self.tier = model.cfg.tier

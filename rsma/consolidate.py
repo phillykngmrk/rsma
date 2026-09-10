@@ -19,10 +19,14 @@ def holdout_loss(model, batches, state=None):
 
 
 @torch.no_grad()
-def consolidate(model, state, holdout_batches, eta=1.0, tol=0.02):
+def consolidate(model, state, holdout_batches, eta=1.0, tol=0.0):
     """
     state: list of fast deltas (B, H, R, d). The batch dimension is averaged before merging.
     Returns dict with before/after losses, accepted flag, and the reset state.
+
+    The held-out set is fixed, so its loss is deterministic and the default tolerance is zero:
+    a merge is kept only if it does not make the model worse. A positive tolerance lets small
+    regressions accumulate across repeated merges, which is a ratchet in the wrong direction.
     """
     fast_layers = model.fast_layers
     before = holdout_loss(model, holdout_batches, None)
@@ -39,7 +43,7 @@ def consolidate(model, state, holdout_batches, eta=1.0, tol=0.02):
     return {"before": before, "after": after, "accepted": accepted, "merged_norm": merged_norm, "state": fresh}
 
 
-def sleep(model, recent_batches, replay_batches, holdout_batches, steps=20, lr=1e-4, tol=0.02):
+def sleep(model, recent_batches, replay_batches, holdout_batches, steps=20, lr=1e-4, tol=0.0):
     """
     Gradient consolidation. Fine-tune the slow weights on recent experience mixed with replay
     from the original corpus, then verify on held-out data and revert if it regressed.
