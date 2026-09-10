@@ -18,7 +18,8 @@ class RSMAConfig:
     fast_heads: int = 4
     chunk_size: int = 16          # tokens per fast-weight update step
     fast_lr_scale: float = 1.0    # multiplies sigmoid(beta)
-    fast_beta_init: float = -2.0  # bias on beta; sigmoid(-2) ~ 0.12 initial rate
+    fast_beta_init: float = 0.0   # bias on beta; sigmoid(0) = 0.5 initial rate
+    fast_w0_std: float = 0.05     # init scale of the slow fast-weight matrix W0
     fast_max_norm: float = 4.0    # per-head Frobenius clip on the fast delta
 
     # self-model
@@ -26,6 +27,8 @@ class RSMAConfig:
     summary_dim: int = 32         # random-projection size of each head's delta
     selfmodel_hidden: int = 128
     selfmodel_loss_weight: float = 0.1
+
+    stream_len: int = 1           # consecutive windows per training stream; state carries across them
 
     # persistence: 1 = reset per sequence, 2 = persist across sequences, 3 = consolidate into slow weights
     tier: int = 1

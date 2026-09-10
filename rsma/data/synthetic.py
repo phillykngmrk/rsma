@@ -24,9 +24,27 @@ class RuleSwitchMarkov:
         logits.scatter_(-1, idx, w)
         return torch.softmax(logits, -1)
 
-    def batch(self, batch):
+    def batch(self, batch, total_len=None, n_switches=None):
         """returns x (B, T), y (B, T), switch positions (B, n_switches)"""
-        V, T = self.vocab, self.seq_len + 1
+        V = self.vocab
+        T = (total_len or self.seq_len) + 1
+        n_sw = self.n_switches if n_switches is None else n_switches
+        return self._generate(batch, V, T, n_sw)
+
+    def stream(self, batch, n_seq, switches_per_window=0.5):
+        """
+        n_seq consecutive windows from one long sequence, rules persisting across windows.
+        Yields (x, y, switches) with switch positions given relative to the window start
+        (negative means the switch happened in an earlier window).
+        """
+        T = self.seq_len
+        n_sw = max(1, int(round(n_seq * switches_per_window)))
+        x, y, sw = self.batch(batch, total_len=n_seq * T, n_switches=n_sw)
+        for s in range(n_seq):
+            yield x[:, s * T:(s + 1) * T], y[:, s * T:(s + 1) * T], sw - s * T
+
+    def _generate(self, batch, V, T, n_switches):
+        self.n_switches, saved = n_switches, self.n_switches
         n_seg = self.n_switches + 1
         # switch points evenly spaced with jitter, never in the first or last 32 tokens
         base = torch.linspace(0, T, n_seg + 1)[1:-1]
@@ -41,5 +59,6 @@ class RuleSwitchMarkov:
             P = torch.stack([tables[k][b] for b, k in enumerate(seg.tolist())])
             probs = P[torch.arange(batch), seq[:, t - 1]]
             seq[:, t] = torch.multinomial(probs, 1, generator=self.g).squeeze(-1)
+        self.n_switches = saved
         x, y = seq[:, :-1].to(self.device), seq[:, 1:].to(self.device)
         return x, y, switches.to(self.device)

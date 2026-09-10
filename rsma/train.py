@@ -45,6 +45,51 @@ def next_batch(data, args, split="train"):
     return data.batch(args.batch, split)
 
 
+def stream_windows(data, args, split="train"):
+    """(x, y) windows of one stream of args.stream consecutive sequences"""
+    if args.task == "synthetic":
+        for x, y, _ in data.stream(args.batch, args.stream):
+            yield x, y
+    else:
+        yield from data.stream(args.batch, args.stream, split)
+
+
+def window_iter(data, args, split="train"):
+    """infinite iterator of (x, y, first_in_stream)"""
+    while True:
+        if args.stream <= 1:
+            x, y = next_batch(data, args, split)
+            yield x, y, True
+        else:
+            for i, (x, y) in enumerate(stream_windows(data, args, split)):
+                yield x, y, i == 0
+
+
+@torch.no_grad()
+def stream_eval(model, data, args, n_streams=4, early=32):
+    """
+    Memory across the attention window. For each stream, run windows with fast state carried
+    (persistent) and with fast state reset (reset). Loss on the first `early` tokens of windows
+    after the first is where carried-over knowledge shows up.
+    """
+    model.eval()
+    acc = {"w0": [], "later_persist": [], "later_reset": [], "early_persist": [], "early_reset": []}
+    for _ in range(n_streams):
+        state = None
+        for i, (x, y) in enumerate(stream_windows(data, args, "val")):
+            _, state, aux = model(x, state, targets=y)
+            _, _, aux0 = model(x, None, targets=y)
+            if i == 0:
+                acc["w0"].append(aux["lm_loss"].item())
+            else:
+                acc["later_persist"].append(aux["lm_loss"].item())
+                acc["later_reset"].append(aux0["lm_loss"].item())
+                acc["early_persist"].append(aux["per_token_loss"][:, :early].mean().item())
+                acc["early_reset"].append(aux0["per_token_loss"][:, :early].mean().item())
+    model.train()
+    return {f"stream_{k}": (sum(v) / len(v) if v else float("nan")) for k, v in acc.items()}
+
+
 @torch.no_grad()
 def evaluate(model, data, args, n=8):
     model.eval()
@@ -60,7 +105,10 @@ def evaluate(model, data, args, n=8):
             if p.std() > 0 and a.std() > 0:
                 corr += torch.corrcoef(torch.stack([p, a]))[0, 1].item()
     model.train()
-    return {"val_lm": lm / n, "val_sm": sm / n, "val_selfmodel_corr": corr / n}
+    out = {"val_lm": lm / n, "val_sm": sm / n, "val_selfmodel_corr": corr / n}
+    if args.stream > 1:
+        out.update(stream_eval(model, data, args))
+    return out
 
 
 def main():
@@ -81,6 +129,7 @@ def main():
     ap.add_argument("--corpus", default=None, help="path to a UTF-8 text file for --task text")
     ap.add_argument("--n-switches", type=int, default=1)
     ap.add_argument("--tier", type=int, default=1)
+    ap.add_argument("--stream", type=int, default=1, help="consecutive windows per stream; fast state carries across them")
     ap.add_argument("--no-fast", action="store_true")
     ap.add_argument("--no-gate", action="store_true")
     ap.add_argument("--sm-weight", type=float, default=0.1)
@@ -97,7 +146,7 @@ def main():
         seq_len=args.seq_len, chunk_size=args.chunk,
         fast_layers=tuple(int(i) for i in args.fast_layers.split(",") if i != ""),
         use_fast=not args.no_fast, use_gate=not args.no_gate,
-        selfmodel_loss_weight=args.sm_weight, tier=args.tier,
+        selfmodel_loss_weight=args.sm_weight, tier=args.tier, stream_len=args.stream,
     )
     model = RSMA(cfg).to(device)
     print(f"device={device} params={model.n_params()/1e6:.2f}M fast_layers={model.fast_layer_ids}")
@@ -119,11 +168,16 @@ def main():
 
     model.train()
     t0 = time.time()
+    windows = window_iter(train_data, args)
+    state = None
     for step in range(1, args.steps + 1):
         for g in opt.param_groups:
             g["lr"] = lr_at(step)
-        x, y = next_batch(train_data, args)
-        _, _, aux = model(x, targets=y)
+        x, y, first = next(windows)
+        if first:
+            state = None
+        _, new_state, aux = model(x, state, targets=y)
+        state = model.clone_state(new_state) if new_state else None
         opt.zero_grad(set_to_none=True)
         aux["loss"].backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -138,7 +192,7 @@ def main():
             print(f"step {step:5d} lm {rec['lm']:.4f}" + (f" sm {rec['sm']:.4f} gate {rec['gate']:.3f} |d| {rec['delta_norm']:.2f}" if "sm" in rec else "") + f"  {el/step*1000:.0f}ms/step")
         if step % args.eval_every == 0 or step == args.steps:
             rec.update(evaluate(model, val_data, args))
-            print(f"  eval step {step}: " + " ".join(f"{k}={v:.4f}" for k, v in rec.items() if k.startswith("val")))
+            print(f"  eval step {step}: " + " ".join(f"{k}={v:.4f}" for k, v in rec.items() if k.startswith(("val", "stream"))))
             torch.save({"cfg": cfg.to_dict(), "model": model.state_dict(), "step": step}, os.path.join(run_dir, "ckpt.pt"))
         log.write(json.dumps(rec) + "\n")
         log.flush()

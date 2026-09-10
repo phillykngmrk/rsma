@@ -72,3 +72,15 @@ def test_consolidate_and_runtime():
         rec = rt.step(*hold[0])
     assert len(rt.consolidations) == 2
     assert rt.state[0].abs().sum() == 0  # reset after consolidation
+
+
+def test_synthetic_stream_windows():
+    from rsma.data.synthetic import RuleSwitchMarkov
+    d = RuleSwitchMarkov(vocab=8, seq_len=32, seed=1)
+    wins = list(d.stream(2, 4))
+    assert len(wins) == 4
+    x0, y0, sw0 = wins[0]
+    assert x0.shape == (2, 32) and torch.equal(x0[:, 1:], y0[:, :-1])
+    x1, _, sw1 = wins[1]
+    assert torch.equal(wins[0][1][:, -1], x1[:, 0])  # windows are contiguous
+    assert torch.equal(sw1, sw0 - 32)

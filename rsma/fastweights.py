@@ -31,7 +31,7 @@ class SelfReferentialFastWeights(nn.Module):
         self.H, self.d = H, D // H
         self.R = 3 * self.d + 1
         self.W0 = nn.Parameter(torch.zeros(H, self.R, self.d))
-        nn.init.normal_(self.W0, std=0.02)
+        nn.init.normal_(self.W0, std=cfg.fast_w0_std)
         with torch.no_grad():
             self.W0[:, -1, :].zero_()  # beta row starts at zero; rate set by beta_bias
         self.beta_bias = nn.Parameter(torch.full((H,), cfg.fast_beta_init))
@@ -40,7 +40,7 @@ class SelfReferentialFastWeights(nn.Module):
         self.reset_special_init()
 
     def reset_special_init(self):
-        nn.init.zeros_(self.out.weight)  # sublayer starts as identity on the residual stream
+        nn.init.normal_(self.out.weight, std=0.01)  # small so the sublayer starts near identity
         nn.init.zeros_(self.out.bias)
         with torch.no_grad():
             self.W0[:, -1, :].zero_()

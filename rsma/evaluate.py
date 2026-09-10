@@ -20,7 +20,7 @@ from .model import RSMA
 from .data.synthetic import RuleSwitchMarkov
 from .data.text import CharText
 from .runtime import SelfModifyingRuntime
-from .train import get_device
+from .train import get_device, stream_eval
 
 
 def load(run, device):
@@ -90,15 +90,22 @@ def main():
     task = targs["task"]
     report = {"run": args.run, "task": task}
 
+    class A:  # minimal args shim for stream_eval
+        pass
+    sa = A()
+    sa.task, sa.batch, sa.stream = task, 32, max(2, targs.get("stream", 1))
+
     if task == "synthetic":
         data = RuleSwitchMarkov(vocab=targs["vocab"], seq_len=targs["seq_len"], n_switches=targs["n_switches"], seed=4242, device=device)
         report["adaptation"], curve = adaptation_curve(model, data)
         torch.save(curve, os.path.join("runs", args.run, "adaptation_curve.pt"))
         report["selfmodel"] = selfmodel_calibration(model, lambda: data.batch(32)[:2])
+        report["memory"] = stream_eval(model, data, sa, n_streams=8)
         if args.baseline:
             base, _, _ = load(args.baseline, device)
             data_b = RuleSwitchMarkov(vocab=targs["vocab"], seq_len=targs["seq_len"], n_switches=targs["n_switches"], seed=4242, device=device)
             report["baseline_adaptation"], curve_b = adaptation_curve(base, data_b)
+            report["baseline_memory"] = stream_eval(base, data_b, sa, n_streams=8)
             torch.save(curve_b, os.path.join("runs", args.baseline, "adaptation_curve.pt"))
         def stream_src(n):
             for _ in range(n):
@@ -108,6 +115,7 @@ def main():
     else:
         ds = CharText(seq_len=targs["seq_len"], seed=7, device=device)
         report["selfmodel"] = selfmodel_calibration(model, lambda: ds.batch(32, "val"))
+        report["memory"] = stream_eval(model, ds, sa, n_streams=8)
         report["val_loss"] = selfmodel_calibration(model, lambda: ds.batch(32, "val"))["actual_mean"] if report["selfmodel"] else None
         stream_src = lambda n: ds.stream(1, n, "val")
         holdout = [ds.batch(16, "val") for _ in range(2)]
