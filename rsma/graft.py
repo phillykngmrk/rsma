@@ -34,7 +34,8 @@ class LoRALinear(nn.Module):
         self.scale = alpha / r
 
     def forward(self, x):
-        return self.base(x) + F.linear(F.linear(x, self.A), self.B) * self.scale
+        lora = F.linear(F.linear(x.to(self.A.dtype), self.A), self.B) * self.scale
+        return self.base(x) + lora.to(x.dtype)
 
 
 class GraftedRSMA(nn.Module):
@@ -81,10 +82,10 @@ class GraftedRSMA(nn.Module):
             if self._state_in is None:
                 return output
             h = output[0] if isinstance(output, tuple) else output
-            y, new_delta, aux = self.fast[fi](h, self._state_in[fi], self.selfmodel)
+            y, new_delta, aux = self.fast[fi](h.float(), self._state_in[fi], self.selfmodel)  # fast path runs in fp32
             self._state_out[fi] = new_delta
             self._aux[fi] = aux
-            h2 = h + y
+            h2 = h + y.to(h.dtype)
             return (h2,) + tuple(output[1:]) if isinstance(output, tuple) else h2
         return hook
 
@@ -127,7 +128,7 @@ class GraftedRSMA(nn.Module):
         out = self.base(input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True, use_cache=False)
         self._state_in = None
         logits = out.logits
-        h = out.hidden_states[-1]
+        h = out.hidden_states[-1].float()
         new_state, fast_aux = self._state_out, self._aux
 
         aux = {}

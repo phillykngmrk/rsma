@@ -74,7 +74,11 @@ def test_consolidate_and_runtime():
     for _ in range(6):
         rec = rt.step(*hold[0])
     assert len(rt.consolidations) == 2
-    assert rt.state[0].abs().sum() == 0  # reset after consolidation
+    last = rt.consolidations[-1]
+    if last["accepted"]:
+        assert rt.state[0].abs().sum() == 0  # memory moved into W0, fast state starts fresh
+    else:
+        assert rt.state[0].abs().sum() > 0   # rejected: memory stays in the fast state
 
 
 def test_synthetic_stream_windows():

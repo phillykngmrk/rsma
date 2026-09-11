@@ -10,8 +10,10 @@ Success: Sankofa knows something about you next month that it learned from you t
 you can verify it by asking. Measured by `rsma/memtest.py`: facts told in one session, recalled
 in a fresh session from persisted and consolidated weights alone, scored against distractors.
 
-Current: fast weights help on synthetic rules (0.9 nats) and modestly on text. Conversational
-recall is not yet demonstrated. This is the research problem at the center of the project.
+Current (2026-09-11): first measured cross-session recall. 6 facts told in one session; in a fresh
+process, the persisted fast weights alone recover 3 of 6 by likelihood shift, vs 1 of 6 with the
+state reset. Margin is thin. The test also found and fixed a bug that wiped the fast state whenever
+a merge was rejected. This is the research problem at the center of the project.
 
 ## 2. The self-model is worth trusting
 
@@ -27,8 +29,8 @@ now ranks candidate material by the self-model's forecast benefit before reading
 Success: Sankofa reasons through a question before answering it. The self-modification layers
 ride on a base large enough to do real work, on hardware the owner controls.
 
-Current: Qwen2.5-0.5B-Instruct. Next: a base with a thinking mode (Qwen3 1.7B or 4B). The graft
-is base-agnostic; this is a flag change plus a training run.
+Current: Qwen2.5-0.5B-Instruct in training. Qwen3-1.7B (thinking mode) grafts cleanly: base loss
+preserved exactly, 27M trainable parameters, forward 0.7 s on this machine. Next: train it.
 
 ## Rules that do not change
 

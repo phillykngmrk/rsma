@@ -64,7 +64,7 @@ class Study:
                     add(aid, f"arxiv {title}", f"{title}\n\n{abstract}")
             except Exception as e:
                 print(f"  ! arxiv {cat}: {type(e).__name__}")
-        return docs[: self.cfg.get("max_docs", 30)]
+        return docs[: self.cfg.get("max_candidates", 60)]
 
     # ---- read -------------------------------------------------------------------------------------
     def read(self, doc):
@@ -81,11 +81,40 @@ class Study:
         self.seen.add(doc["key"])
         return {"tokens": len(ids), "mean_loss": sum(losses) / max(len(losses), 1), "rollbacks": rollbacks}
 
+    # ---- self-model-directed selection ------------------------------------------------------------
+    @torch.no_grad()
+    def rank(self, docs):
+        """Let the self-model choose. For each candidate, read its first window WITHOUT keeping the
+        modification and take the self-model's forecast of how much the resulting state would help
+        on what comes next. Higher forecast benefit reads first; the rest wait for a later cycle."""
+        chat = self.chat
+        T = chat.cfg.seq_len
+        C = chat.cfg.chunk_size
+        scored = []
+        if chat.state.fast is None:
+            chat.state.fast = chat.model.init_state(1, chat.device)
+        for d in docs:
+            ids = chat.tok(f"<|im_start|>user\n[Study material: {d['source']}]\n{d['text']}<|im_end|>\n", add_special_tokens=False).input_ids[:T]
+            ids = ids[: (len(ids) // C) * C]
+            if len(ids) < C:
+                continue
+            x = torch.tensor(ids, device=chat.device)[None]
+            _, _, aux = chat.model(x, chat.state.fast)  # state not kept: a probe, not a read
+            d["forecast"] = aux["pred_benefit"][0, -1].item()
+            scored.append(d)
+        scored.sort(key=lambda d: d["forecast"], reverse=True)
+        return scored
+
     # ---- cycle ------------------------------------------------------------------------------------
     def cycle(self):
         t0 = time.time()
-        docs = self.gather()
-        print(f"[study] {len(docs)} new documents")
+        candidates = self.gather()
+        ranked = self.rank(candidates)
+        k = self.cfg.get("max_docs", 30)
+        docs, deferred = ranked[:k], ranked[k:]
+        print(f"[study] {len(candidates)} candidates, self-model chose {len(docs)}, deferred {len(deferred)}")
+        if docs:
+            print(f"        forecast benefit: best {docs[0]['forecast']:+.4f}, worst chosen {docs[-1]['forecast']:+.4f}")
         reads = []
         for d in docs:
             r = self.read(d)
@@ -97,6 +126,7 @@ class Study:
         self.chat.state.save()
         json.dump(sorted(self.seen), open(self.seen_path, "w"))
         rec = {"time": time.strftime("%Y-%m-%d %H:%M:%S"), "seconds": round(time.time() - t0), "docs": len(docs),
+               "candidates": len(candidates), "forecasts": [round(d["forecast"], 4) for d in docs],
                "tokens": sum(r["tokens"] for r in reads), "rollbacks": sum(r["rollbacks"] for r in reads),
                "consolidate": {k: v for k, v in merge.items() if k != "tried"}, "sleep": nap, "sources": [r["source"] for r in reads]}
         with open(os.path.join(self.dir, "log.jsonl"), "a") as f:

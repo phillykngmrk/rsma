@@ -55,10 +55,12 @@ def consolidate(model, state, holdout_batches, eta=1.0, tol=0.0, etas=(1.0, 0.5,
     if not accepted:
         for fl, w in zip(fast_layers, backup):
             fl.W0.copy_(w)
-    fresh = [torch.zeros_like(d) for d in state]
+    # accepted: the memory now lives in W0, so the fast state starts fresh.
+    # rejected: the memory stays where it was, in the fast state. Never discard it.
+    next_state = [torch.zeros_like(d) for d in state] if accepted else state
     merged_norm = sum(dm.norm().item() for dm in means)
     return {"before": before, "after": after, "before_corpus": before_corpus, "after_corpus": after_corpus,
-            "accepted": accepted, "eta": used_eta, "tried": tried, "merged_norm": merged_norm, "state": fresh}
+            "accepted": accepted, "eta": used_eta, "tried": tried, "merged_norm": merged_norm, "state": next_state}
 
 
 def sleep(model, recent_batches, replay_batches, holdout_batches, steps=20, lr=2e-5, tol=0.0, params=None):

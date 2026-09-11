@@ -13,7 +13,8 @@
   "wikipedia_per_topic": 2,
   "arxiv": ["cs.AI", "cs.LG", "econ.GN", "q-fin.GN"],
   "arxiv_per_category": 5,
-  "max_docs": 30,
+  "max_candidates": 60,
+  "max_docs": 24,
   "max_chars_per_doc": 12000,
   "sleep_steps": 20,
   "consolidate": true

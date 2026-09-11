@@ -136,6 +136,7 @@ def main():
     ap.add_argument("--task", default="synthetic", choices=["synthetic", "text", "tokens", "figures"])
     ap.add_argument("--graft", default=None, help="Hugging Face base model to graft RSMA onto (frozen base + adapters)")
     ap.add_argument("--lora-r", type=int, default=16)
+    ap.add_argument("--base-dtype", default="fp32", choices=["fp32", "bf16"], help="dtype of the frozen base (bf16 halves memory for larger bases)")
     ap.add_argument("--sources", default=None, help='token source weights, e.g. "wikitext=0.6,gutenberg=0.2,malcolmx=0.2"')
     ap.add_argument("--init-from", default=None, help="run name whose checkpoint initializes the model (fine-tuning)")
     ap.add_argument("--resume", action="store_true", help="continue this run from its checkpoint (optimizer state is not restored)")
@@ -177,7 +178,7 @@ def main():
     cfg.fast_heads = args.fast_heads
     if args.graft:
         from .graft import GraftedRSMA
-        model = GraftedRSMA(args.graft, cfg, lora_r=args.lora_r).to(device)
+        model = GraftedRSMA(args.graft, cfg, lora_r=args.lora_r, dtype=torch.bfloat16 if args.base_dtype == "bf16" else torch.float32).to(device)
         cfg = model.cfg
     else:
         model = RSMA(cfg).to(device)
