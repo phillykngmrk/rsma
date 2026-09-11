@@ -178,9 +178,6 @@ def main():
         from .graft import GraftedRSMA
         model = GraftedRSMA(args.graft, cfg, lora_r=args.lora_r).to(device)
         cfg = model.cfg
-        cfg.fast_heads = cfg.d_model // 64
-        for fl in model.fast:  # rebuild is not needed: heads were set from cfg before construction
-            pass
     else:
         model = RSMA(cfg).to(device)
     if args.init_from:
@@ -201,12 +198,6 @@ def main():
     meta = {"cfg": cfg.to_dict(), "args": vars(args)}
     if args.task == "text":
         meta["vocab_chars"] = train_data.itos
-    if args.task == "figures":
-        from transformers import AutoTokenizer
-        tok = AutoTokenizer.from_pretrained(args.graft)
-        ds = FigureText(tok, seq_len=args.seq_len, seed=args.seed, device=device)
-        print("figures:", ds.summary())
-        return ds, ds, ds.vocab
     if args.task == "tokens":
         meta["tokenizer"] = "data_cache/tokens/tokenizer.json"
     json.dump(meta, open(os.path.join(run_dir, "config.json"), "w"), indent=1)

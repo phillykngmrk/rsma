@@ -26,6 +26,8 @@ CACHE = os.path.join(ROOT, "data_cache")
 OUT = os.path.join(CACHE, "figures")
 RAW = os.path.join(CACHE, "figures_raw")
 UA = {"User-Agent": "Mozilla/5.0 (rsma corpus builder; personal research)"}
+YT_SLEEP, SKIP_YT = 1.0, False
+YT_BLOCKED = 0
 
 
 def slug(name):
@@ -47,7 +49,7 @@ def cached(key, fn):
         t = fn()
     except Exception as e:
         print(f"    ! {key}: {type(e).__name__}: {str(e)[:100]}")
-        t = ""
+        return ""  # not cached, so a rerun retries it
     open(p, "w", encoding="utf-8").write(t or "")
     return t or ""
 
@@ -165,13 +167,21 @@ def youtube(name, queries, max_videos):
             def fetch(vid=vid):
                 from youtube_transcript_api import YouTubeTranscriptApi
                 t = YouTubeTranscriptApi().fetch(vid, languages=["en", "en-US", "en-GB"])
-                time.sleep(1.0)
+                time.sleep(YT_SLEEP)
                 txt = " ".join(s.text.replace("\n", " ") for s in t)
                 txt = re.sub(r"\[(Music|Applause|Laughter)\]", "", txt, flags=re.I)
                 return re.sub(r"\s+", " ", txt).strip()
+            global YT_BLOCKED
+            if YT_BLOCKED >= 3:
+                return docs
+            before = YT_BLOCKED
             txt = cached("yt_" + vid, fetch)
-            if len(txt) > 2000:
-                docs.append((f"youtube {vid} {title}", txt))
+            if txt:
+                YT_BLOCKED = 0
+                if len(txt) > 2000:
+                    docs.append((f"youtube {vid} {title}", txt))
+            elif not os.path.exists(os.path.join(RAW, "yt_" + vid + ".txt")):
+                YT_BLOCKED = before + 1
     return docs
 
 
@@ -200,7 +210,7 @@ def build(fig, max_videos):
         docs += wikisource_author(fig["wikisource_author"])
     if fig.get("blackpast"):
         docs += blackpast(fig["name"])
-    if fig.get("youtube"):
+    if fig.get("youtube") and not SKIP_YT:
         docs += youtube(fig["name"], fig["youtube"], max_videos)
     for u in fig.get("urls", []):
         docs.append((f"url {u}", url_text(u)))
@@ -214,7 +224,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-videos", type=int, default=10)
     ap.add_argument("--only", default=None)
+    ap.add_argument("--skip-youtube", action="store_true", help="public-domain and web sources only")
+    ap.add_argument("--yt-sleep", type=float, default=1.0, help="seconds between transcript fetches")
     args = ap.parse_args()
+    global YT_SLEEP, SKIP_YT
+    YT_SLEEP, SKIP_YT = args.yt_sleep, args.skip_youtube
     manifest = json.load(open(os.path.join(ROOT, "figures.json")))
     os.makedirs(OUT, exist_ok=True)
     only = set(n.strip() for n in args.only.split(",")) if args.only else None

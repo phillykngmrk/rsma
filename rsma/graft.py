@@ -52,6 +52,8 @@ class GraftedRSMA(nn.Module):
         cfg.d_model = bc.hidden_size
         cfg.vocab_size = bc.vocab_size
         cfg.n_layers = bc.num_hidden_layers
+        if cfg.d_model % cfg.fast_heads != 0 or cfg.d_model // cfg.fast_heads != 64:
+            cfg.fast_heads = max(1, cfg.d_model // 64)  # 64-wide heads regardless of the base's width
         self.cfg = cfg
         self.lora_r, self.lora_targets = lora_r, tuple(lora_targets)
         layers = self.base.model.layers
