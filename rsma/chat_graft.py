@@ -28,8 +28,10 @@ from .train import get_device
 
 class GraftChat:
     def __init__(self, run, device, tier=3, rollback_tol=0.02, consolidate_every=8, temperature=0.7, max_new=300,
-                 persona_name=None, repetition_penalty=1.15):
+                 persona_name=None, repetition_penalty=1.15, think=True, show_think=True):
         self.repetition_penalty = repetition_penalty
+        self.think, self.show_think = think, show_think
+        self.last_full = ""
         self.run_dir = os.path.join("runs", run)
         self.ckpt = os.path.join(self.run_dir, "ckpt.pt")
         self.model, ck = GraftedRSMA.load(self.ckpt, device)
@@ -96,18 +98,32 @@ class GraftChat:
                 "delta_norm": aux["delta_norms"].mean().item()}
 
     def reply(self, user):
+        """Returns (answer, thinking). Bases with a thinking mode emit a reasoning block first; it is
+        shown separately, kept out of the reply history as the base's template expects, and included
+        in what the model learns from, since it is part of its own experience."""
         self.messages.append({"role": "user", "content": user})
-        prompt = self.tok.apply_chat_template(self.messages, add_generation_prompt=True, tokenize=False)
+        try:
+            prompt = self.tok.apply_chat_template(self.messages, add_generation_prompt=True, tokenize=False, enable_thinking=self.think)
+        except TypeError:
+            prompt = self.tok.apply_chat_template(self.messages, add_generation_prompt=True, tokenize=False)
         ids = self.tok(prompt, add_special_tokens=False, return_tensors="pt").input_ids.to(self.device)
         out = self.model.generate(ids, self.state.fast, max_new=self.max_new, temperature=self.temperature, stop_ids=self.stop_ids,
                                   repetition_penalty=self.repetition_penalty)
         gen = out[0, ids.shape[1]:].tolist()
-        text = self.tok.decode(gen, skip_special_tokens=True).strip()
+        full = self.tok.decode(gen, skip_special_tokens=True).strip()
+        thinking, text = "", full
+        if "</think>" in full:
+            thinking, text = full.split("</think>", 1)
+            thinking = thinking.replace("<think>", "").strip()
+            text = text.strip()
+        elif full.startswith("<think>"):
+            thinking, text = full[len("<think>"):].strip(), ""  # ran out of tokens while thinking
+        self.last_full = full
         self.messages.append({"role": "assistant", "content": text})
         # keep the message history bounded; the fast weights carry the rest
         if len(self.messages) > 21:
             self.messages = [self.messages[0]] + self.messages[-20:]
-        return text
+        return text, thinking
 
     def turn_ids(self, role, content):
         return self.tok(f"<|im_start|>{role}\n{content}<|im_end|>\n", add_special_tokens=False).input_ids
@@ -196,9 +212,12 @@ class GraftChat:
                     print("[unknown command]")
                 continue
             info = self.learn(self.turn_ids("user", user))
-            answer = self.reply(user)
-            print(f"{self.persona_name}: {answer}")
-            info2 = self.learn(self.turn_ids("assistant", answer))
+            answer, thinking = self.reply(user)
+            if thinking and self.show_think:
+                shown = thinking[:600] + ("..." if len(thinking) > 600 else "")
+                print(f"  ({self.persona_name} thinking: {shown})")
+            print(f"{self.persona_name}: {answer if answer else '[thinking used all the tokens; raise --max-new]'}")
+            info2 = self.learn(self.turn_ids("assistant", self.last_full))
             self.state.turns += 1
             tag = []
             if info.get("rolled_back") or info2.get("rolled_back"):
@@ -218,15 +237,17 @@ def main():
     ap.add_argument("--run", required=True)
     ap.add_argument("--tier", type=int, default=3)
     ap.add_argument("--temperature", type=float, default=0.7)
-    ap.add_argument("--max-new", type=int, default=300)
+    ap.add_argument("--max-new", type=int, default=700)
     ap.add_argument("--consolidate-every", type=int, default=8)
     ap.add_argument("--persona-name", default=None)
     ap.add_argument("--repetition-penalty", type=float, default=1.15, help="sampling setting; 1.0 disables it")
+    ap.add_argument("--no-think", action="store_true", help="disable the base's thinking mode for this session")
+    ap.add_argument("--hide-think", action="store_true", help="do not print the reasoning block")
     ap.add_argument("--device", default=None)
     args = ap.parse_args()
     GraftChat(args.run, args.device or get_device(), tier=args.tier, temperature=args.temperature, max_new=args.max_new,
               consolidate_every=args.consolidate_every, persona_name=args.persona_name,
-              repetition_penalty=args.repetition_penalty).run()
+              repetition_penalty=args.repetition_penalty, think=not args.no_think, show_think=not args.hide_think).run()
 
 
 if __name__ == "__main__":

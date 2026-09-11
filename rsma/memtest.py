@@ -111,7 +111,7 @@ def main():
         for topic, question, options in FACTS[: args.facts]:
             text = sentence(topic, assignment[topic])
             a.learn(a.turn_ids("user", text))
-            reply = a.reply(text)
+            reply, _ = a.reply(text)
             a.learn(a.turn_ids("assistant", reply))
             a.state.turns += 1
         in_context_correct, in_context_margin, _ = score(a, assignment, base_table)

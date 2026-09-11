@@ -12,7 +12,7 @@ turns = ["What does equal protection under the law mean?", "How should I think a
          "What did Darwin actually claim?", "Give me one habit for a calmer mind."]
 for t in turns:
     info = c.learn(c.turn_ids("user", t))
-    ans = c.reply(t)
+    ans, _ = c.reply(t)
     info2 = c.learn(c.turn_ids("assistant", ans))
     c.state.turns += 1
     print(f"You: {t}\n{c.persona_name}: {ans[:200]!r}\n  learn: {json.dumps({k: (round(v, 3) if isinstance(v, float) else v) for k, v in info2.items()})}")
