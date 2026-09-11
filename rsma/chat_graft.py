@@ -28,7 +28,8 @@ from .train import get_device
 
 class GraftChat:
     def __init__(self, run, device, tier=3, rollback_tol=0.02, consolidate_every=8, temperature=0.7, max_new=300,
-                 persona_name=None):
+                 persona_name=None, repetition_penalty=1.15):
+        self.repetition_penalty = repetition_penalty
         self.run_dir = os.path.join("runs", run)
         self.ckpt = os.path.join(self.run_dir, "ckpt.pt")
         self.model, ck = GraftedRSMA.load(self.ckpt, device)
@@ -98,7 +99,8 @@ class GraftChat:
         self.messages.append({"role": "user", "content": user})
         prompt = self.tok.apply_chat_template(self.messages, add_generation_prompt=True, tokenize=False)
         ids = self.tok(prompt, add_special_tokens=False, return_tensors="pt").input_ids.to(self.device)
-        out = self.model.generate(ids, self.state.fast, max_new=self.max_new, temperature=self.temperature, stop_ids=self.stop_ids)
+        out = self.model.generate(ids, self.state.fast, max_new=self.max_new, temperature=self.temperature, stop_ids=self.stop_ids,
+                                  repetition_penalty=self.repetition_penalty)
         gen = out[0, ids.shape[1]:].tolist()
         text = self.tok.decode(gen, skip_special_tokens=True).strip()
         self.messages.append({"role": "assistant", "content": text})
@@ -219,10 +221,12 @@ def main():
     ap.add_argument("--max-new", type=int, default=300)
     ap.add_argument("--consolidate-every", type=int, default=8)
     ap.add_argument("--persona-name", default=None)
+    ap.add_argument("--repetition-penalty", type=float, default=1.15, help="sampling setting; 1.0 disables it")
     ap.add_argument("--device", default=None)
     args = ap.parse_args()
     GraftChat(args.run, args.device or get_device(), tier=args.tier, temperature=args.temperature, max_new=args.max_new,
-              consolidate_every=args.consolidate_every, persona_name=args.persona_name).run()
+              consolidate_every=args.consolidate_every, persona_name=args.persona_name,
+              repetition_penalty=args.repetition_penalty).run()
 
 
 if __name__ == "__main__":
