@@ -138,6 +138,7 @@ def main():
     ap.add_argument("--lora-r", type=int, default=16)
     ap.add_argument("--sources", default=None, help='token source weights, e.g. "wikitext=0.6,gutenberg=0.2,malcolmx=0.2"')
     ap.add_argument("--init-from", default=None, help="run name whose checkpoint initializes the model (fine-tuning)")
+    ap.add_argument("--resume", action="store_true", help="continue this run from its checkpoint (optimizer state is not restored)")
     ap.add_argument("--fast-heads", type=int, default=4)
     ap.add_argument("--name", default="run")
     ap.add_argument("--steps", type=int, default=3000)
@@ -180,6 +181,12 @@ def main():
         cfg = model.cfg
     else:
         model = RSMA(cfg).to(device)
+    start_step = 1
+    if args.resume and os.path.exists(os.path.join("runs", args.name, "ckpt.pt")):
+        ck = torch.load(os.path.join("runs", args.name, "ckpt.pt"), map_location=device)
+        model.load_state_dict(ck["model"] if "model" in ck else ck["trainable"], strict=False)
+        start_step = int(ck.get("step", 0)) + 1
+        print(f"resumed runs/{args.name} at step {start_step}")
     if args.init_from:
         ck = torch.load(os.path.join("runs", args.init_from, "ckpt.pt"), map_location=device)
         missing, unexpected = model.load_state_dict(ck["model"], strict=False)
@@ -201,11 +208,11 @@ def main():
     if args.task == "tokens":
         meta["tokenizer"] = "data_cache/tokens/tokenizer.json"
     json.dump(meta, open(os.path.join(run_dir, "config.json"), "w"), indent=1)
-    log = open(os.path.join(run_dir, "log.jsonl"), "w")
+    log = open(os.path.join(run_dir, "log.jsonl"), "a" if args.resume else "w")
 
     model.train()
     t0 = time.time()
-    for step in range(1, args.steps + 1):
+    for step in range(start_step, args.steps + 1):
         for g in opt.param_groups:
             g["lr"] = lr_at(step)
         opt.zero_grad(set_to_none=True)
@@ -245,7 +252,7 @@ def main():
             rec["delta_norm"] = aux["delta_norms"].mean().item()
         if step % 20 == 0 or step == 1:
             el = time.time() - t0
-            print(f"step {step:5d} lm {rec['lm']:.4f}" + (f" sm {rec['sm']:.4f} write {rec['gate']:.3f} keep {rec['keep']:.3f} |d| {rec['delta_norm']:.2f}" if "sm" in rec else "") + f"  {el/step*1000:.0f}ms/step")
+            print(f"step {step:5d} lm {rec['lm']:.4f}" + (f" sm {rec['sm']:.4f} write {rec['gate']:.3f} keep {rec['keep']:.3f} |d| {rec['delta_norm']:.2f}" if "sm" in rec else "") + f"  {el/max(1, step - start_step + 1)*1000:.0f}ms/step")
         if step % args.eval_every == 0 or step == args.steps:
             rec.update(evaluate(model, val_data, args))
             print(f"  eval step {step}: " + " ".join(f"{k}={v:.4f}" for k, v in rec.items() if k.startswith(("val", "stream"))))
