@@ -115,6 +115,23 @@ python3 -m venv .venv
 .venv/bin/python -m pytest tests
 ```
 
+## Results so far
+
+### Grafted model (2026-09-11)
+
+Qwen2.5-0.5B-Instruct frozen, 4 fast-weight layers at blocks 5/11/17/23, LoRA rank 16 on
+attention, 7.2M trainable parameters. 600 stream steps on the blended figures corpus.
+
+- Base ability preserved at initialization: loss 3.016 base vs 3.035 grafted on held-out text.
+- After training the voice shifts toward the corpus (investing answers read like Buffett, mind
+  answers like the meditation teachers) while answers stay coherent.
+- Carried fast state helps early tokens of later windows by 0.064 nats on corpus text; the
+  self-model's benefit forecast correlates 0.41 with the measured benefit.
+- Study loop: one cycle reads ~30 new documents (feeds, Wikipedia, arXiv) in about 70 s; the sleep
+  pass was accepted (held-out 3.368 to 3.334) and consolidation correctly rejected.
+- Honest limit: at 600 steps (2.4M tokens) the fast path's influence on outputs is still small, so
+  merges into the slow weights are rejected. A longer run is queued.
+
 ## Results so far (2026-09-10)
 
 ### Second architecture: direct value path, forget gate, benefit-forecasting self-model

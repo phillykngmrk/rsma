@@ -25,7 +25,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, "data_cache")
 OUT = os.path.join(CACHE, "figures")
 RAW = os.path.join(CACHE, "figures_raw")
-UA = {"User-Agent": "Mozilla/5.0 (rsma corpus builder; personal research)"}
+UA = {"User-Agent": "Mozilla/5.0 (rsma corpus builder; personal research)", "Accept-Encoding": "identity"}
 YT_SLEEP, SKIP_YT = 1.0, False
 YT_BLOCKED = 0
 
@@ -38,9 +38,13 @@ def get(url, timeout=60):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         raw = r.read()
-        if r.headers.get("Content-Encoding", "").lower() == "gzip" or raw[:2] == b"\x1f\x8b":
+        enc = r.headers.get("Content-Encoding", "").lower()
+        if enc == "gzip" or raw[:2] == b"\x1f\x8b":
             import gzip
             raw = gzip.decompress(raw)
+        elif enc == "br":
+            import brotli
+            raw = brotli.decompress(raw)
         return raw.decode("utf-8", errors="ignore")
 
 

@@ -6,16 +6,20 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
-UA = {"User-Agent": "Mozilla/5.0 (rsma; personal research)"}
+UA = {"User-Agent": "Mozilla/5.0 (rsma; personal research)", "Accept-Encoding": "identity"}
 
 
 def get(url, timeout=60):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         raw = r.read()
-        if r.headers.get("Content-Encoding", "").lower() == "gzip" or raw[:2] == b"\x1f\x8b":
+        enc = r.headers.get("Content-Encoding", "").lower()
+        if enc == "gzip" or raw[:2] == b"\x1f\x8b":
             import gzip
             raw = gzip.decompress(raw)
+        elif enc == "br":
+            import brotli
+            raw = brotli.decompress(raw)
         return raw.decode("utf-8", errors="ignore")
 
 
