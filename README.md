@@ -1,5 +1,7 @@
 # RSMA: Recursive Self-Modeling Architecture
 
+The model built here is called **Sankofa**.
+
 A self-modifying transformer. The model rewrites part of its own weights at inference time,
 maintains a model of itself that predicts the consequences of those rewrites, and periodically
 consolidates the rewrites into its permanent parameters.
@@ -41,8 +43,8 @@ is the next step up in reasoning.
 .venv/bin/python -m rsma.train --task figures --graft Qwen/Qwen2.5-0.5B-Instruct --name mentor \
     --steps 600 --stream 4 --batch 2 --seq-len 512 --chunk 32 --fast-layers 5,11,17,23 --lr 2e-4
 
-# talk to it (persistent self-state in runs/mentor/self/, consolidation rewrites ckpt.pt)
-.venv/bin/python -m rsma.chat_graft --run mentor --tier 3
+# talk to Sankofa (persistent self-state in runs/mentor/self/, consolidation rewrites ckpt.pt)
+.venv/bin/python -m rsma.chat_graft --run mentor --tier 3 --persona-name Sankofa
 
 # let it study on its own: feeds, Wikipedia, arXiv from study.json; audit log in runs/mentor/study/
 .venv/bin/python -m rsma.study --run mentor --once

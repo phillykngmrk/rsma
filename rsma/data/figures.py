@@ -33,7 +33,8 @@ class FigureText:
         self.tok = tokenizer
         self.seq_len = seq_len
         cov = json.load(open(os.path.join(fig_dir, "coverage.json")))
-        self.persona_name = persona_name or cov.get("persona_name", "Mentor")
+        manifest_name = json.load(open("figures.json")).get("persona_name") if os.path.exists("figures.json") else None
+        self.persona_name = persona_name or manifest_name or cov.get("persona_name", "Sankofa")
         self.system_prompt = persona_prompt(self.persona_name)
         os.makedirs(TOK_DIR, exist_ok=True)
         self.names, self.train, self.val, self.sizes, self.domains = [], {}, {}, {}, {}

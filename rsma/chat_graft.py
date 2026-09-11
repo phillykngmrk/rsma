@@ -41,8 +41,8 @@ class GraftChat:
         self.temperature = temperature
         self.max_new = max_new
         self.frozen = False
-        self.persona_name = persona_name or ck.get("persona_name") or "Mentor"
-        self.system_prompt = ck.get("system_prompt") or persona_prompt(self.persona_name)
+        self.persona_name = persona_name or ck.get("persona_name") or "Sankofa"
+        self.system_prompt = persona_prompt(self.persona_name) if persona_name else (ck.get("system_prompt") or persona_prompt(self.persona_name))
         self.messages = [{"role": "system", "content": self.system_prompt}]
         self.transcript = self.tok(self.tok.apply_chat_template(self.messages, tokenize=False), add_special_tokens=False).input_ids
         self.state = SelfState(os.path.join(self.run_dir, "self"))
