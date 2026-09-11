@@ -1,0 +1,20 @@
+{
+  "topics": [
+    "artificial intelligence research", "monetary policy", "bitcoin", "constitutional law",
+    "history of science", "meditation practice", "startup strategy", "education reform",
+    "software engineering", "philosophy of mind"
+  ],
+  "feeds": [
+    "https://feeds.bbci.co.uk/news/world/rss.xml",
+    "https://www.federalreserve.gov/feeds/press_all.xml",
+    "https://hnrss.org/frontpage",
+    "https://www.supremecourt.gov/rss/cases.xml"
+  ],
+  "wikipedia_per_topic": 2,
+  "arxiv": ["cs.AI", "cs.LG", "econ.GN", "q-fin.GN"],
+  "arxiv_per_category": 5,
+  "max_docs": 30,
+  "max_chars_per_doc": 12000,
+  "sleep_steps": 20,
+  "consolidate": true
+}
