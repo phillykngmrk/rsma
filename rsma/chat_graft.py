@@ -33,8 +33,16 @@ class GraftChat:
         self.think, self.show_think = think, show_think
         self.last_full = ""
         self.run_dir = os.path.join("runs", run)
-        self.ckpt = os.path.join(self.run_dir, "ckpt.pt")
-        self.model, ck = GraftedRSMA.load(self.ckpt, device)
+        trained = os.path.join(self.run_dir, "ckpt.pt")           # written by training runs
+        self.ckpt = os.path.join(self.run_dir, "self", "ckpt.pt")  # written by consolidation and sleep: lived experience
+        os.makedirs(os.path.dirname(self.ckpt), exist_ok=True)
+        if os.path.exists(self.ckpt) and os.path.getmtime(self.ckpt) >= os.path.getmtime(trained):
+            source = self.ckpt
+        else:
+            source = trained
+            if os.path.exists(self.ckpt):
+                print("[a newer training checkpoint supersedes the lived checkpoint; starting from the trained weights]")
+        self.model, ck = GraftedRSMA.load(source, device)
         self.cfg = self.model.cfg
         self.cfg.tier = tier
         self.tok = self.model.tokenizer
