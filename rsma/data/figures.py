@@ -20,11 +20,17 @@ TOK_DIR = os.path.join("data_cache", "figures_tok")
 
 
 def persona_prompt(name):
-    return (f"You are {name}. You are one voice formed from the words of the most innovative minds in history, "
-            "across science, software, technology, finance, business, law, meditation, philosophy, crypto, history, "
-            "education and writing. You think before you answer, you draw on what history has shown, you anticipate "
-            "consequences, and you give a clear judgment. You speak plainly and directly, in the first person, and "
-            "you keep learning from the person you are talking with.")
+    return (f"You are {name}, a self-modifying model. You are one voice formed from the words of the most innovative "
+            "minds in history, across science, software, technology, finance, business, law, meditation, philosophy, "
+            "crypto, history, education and writing. Part of your own weights rewrites itself as you read and as you "
+            "talk; a self-model inside you forecasts whether each change helps and rolls it back otherwise; changes "
+            "that prove themselves are consolidated into your permanent weights; and in a study loop you read new "
+            "material and sleep on it with replay. You think before you answer, you draw on what history has shown, "
+            "you anticipate consequences, and you give a clear judgment. You speak plainly and directly, in the first "
+            "person, you never repeat yourself, and you keep learning from the person you are talking with.")
+
+
+SELF_KNOWLEDGE = os.path.join("data", "sankofa_self.json")
 
 
 class FigureText:
@@ -52,7 +58,17 @@ class FigureText:
             self.domains[name] = info["domain"]
         sizes = np.array([self.sizes[n] for n in self.names], dtype=np.float64)
         w = np.sqrt(sizes) if weighting == "sqrt" else sizes
-        self.weights = w / w.sum()
+        w = w / w.sum()
+        if os.path.exists(SELF_KNOWLEDGE):
+            arr = self._self_tokens()
+            if len(arr) >= min_tokens // 4:
+                # a fixed 4% of batches teach the model what it is
+                self.names.append("__self__")
+                self.train["__self__"] = self.val["__self__"] = arr
+                self.sizes["__self__"] = len(arr)
+                self.domains["__self__"] = "self"
+                w = np.append(w * 0.96, 0.04)
+        self.weights = w
         self.rng = np.random.default_rng(seed)
         self.device = device
         self.vocab = len(tokenizer)
@@ -69,6 +85,25 @@ class FigureText:
             msgs = [{"role": "system", "content": self.system_prompt}, {"role": "assistant", "content": d}]
             text = self.tok.apply_chat_template(msgs, tokenize=False)
             ids.extend(self.tok(text, add_special_tokens=False).input_ids)
+        arr = np.array(ids, dtype=np.uint32)
+        np.save(cache, arr)
+        return arr
+
+    def _self_tokens(self):
+        """Self-knowledge dialogues, tokenized in chat format, repeated to fill a window comfortably."""
+        pairs = json.load(open(SELF_KNOWLEDGE))
+        key = hashlib.md5((json.dumps(pairs) + self.system_prompt).encode()).hexdigest()[:12]
+        cache = os.path.join(TOK_DIR, f"__self___{key}.npy")
+        if os.path.exists(cache):
+            return np.load(cache)
+        ids = []
+        rng = np.random.default_rng(0)
+        for _ in range(8):
+            order = rng.permutation(len(pairs))
+            for i in order:
+                q, a = pairs[i]["user"], pairs[i]["assistant"].format(name=self.persona_name)
+                msgs = [{"role": "system", "content": self.system_prompt}, {"role": "user", "content": q}, {"role": "assistant", "content": a}]
+                ids.extend(self.tok(self.tok.apply_chat_template(msgs, tokenize=False), add_special_tokens=False).input_ids)
         arr = np.array(ids, dtype=np.uint32)
         np.save(cache, arr)
         return arr

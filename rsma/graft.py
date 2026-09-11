@@ -160,7 +160,7 @@ class GraftedRSMA(nn.Module):
         return self.selfmodel.predict_benefit(encs[:, None], pooled_last[:, None])[:, 0]
 
     @torch.no_grad()
-    def generate(self, input_ids, state=None, max_new=200, temperature=0.7, top_p=0.9, stop_ids=()):
+    def generate(self, input_ids, state=None, max_new=200, temperature=0.7, top_p=0.9, stop_ids=(), repetition_penalty=1.15):
         """Sample with the fast weights frozen at `state`. The prompt is left-padded to a
         multiple of chunk_size with the pad token so the fast layers see whole chunks."""
         self.eval()
@@ -175,7 +175,14 @@ class GraftedRSMA(nn.Module):
                 ctx = torch.cat([torch.full((ctx.shape[0], pad), pad_id, dtype=ctx.dtype, device=ctx.device), ctx], dim=1)
                 attn = torch.cat([torch.zeros(ctx.shape[0], pad, dtype=attn.dtype, device=attn.device), attn], dim=1)
             logits, _, _ = self(ctx, state, attention_mask=attn)
-            logits = logits[:, -1].float() / max(temperature, 1e-5)
+            logits = logits[:, -1].float()
+            if repetition_penalty != 1.0:
+                prev = ids[:, input_ids.shape[1]:]  # tokens generated so far
+                if prev.numel():
+                    sc = logits.gather(1, prev)
+                    sc = torch.where(sc > 0, sc / repetition_penalty, sc * repetition_penalty)
+                    logits.scatter_(1, prev, sc)
+            logits = logits / max(temperature, 1e-5)
             probs = F.softmax(logits, dim=-1)
             sp, si = probs.sort(descending=True)
             keep = (sp.cumsum(-1) - sp) < top_p
