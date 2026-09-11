@@ -37,7 +37,11 @@ def slug(name):
 def get(url, timeout=60):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read().decode("utf-8", errors="ignore")
+        raw = r.read()
+        if r.headers.get("Content-Encoding", "").lower() == "gzip" or raw[:2] == b"\x1f\x8b":
+            import gzip
+            raw = gzip.decompress(raw)
+        return raw.decode("utf-8", errors="ignore")
 
 
 def cached(key, fn):
