@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -34,7 +35,20 @@ def slug(name):
     return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
 
 
-def get(url, timeout=60):
+def get(url, timeout=60, retries=4):
+    for attempt in range(retries):
+        try:
+            return _get(url, timeout)
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < retries - 1:
+                wait = 20 * (attempt + 1)
+                print(f"    429 from {url.split('/')[2]}, waiting {wait}s")
+                time.sleep(wait)
+                continue
+            raise
+
+
+def _get(url, timeout=60):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         raw = r.read()
@@ -64,7 +78,10 @@ def cached(key, fn):
 
 def strip_html(s):
     s = re.sub(r"<(script|style|sup|table)[^>]*>.*?</\1>", " ", s, flags=re.S | re.I)
+    pres = re.findall(r"<pre[^>]*>(.*?)</pre>", s, re.S | re.I)
     ps = re.findall(r"<p[^>]*>(.*?)</p>", s, re.S | re.I)
+    if pres and sum(map(len, pres)) > sum(map(len, ps)):
+        return unwrap(html.unescape(re.sub(r"<[^>]+>", "", "\n\n".join(pres))))
     if ps:
         s = "\n\n".join(ps)
     s = re.sub(r"<br\s*/?>", "\n", s, flags=re.I)
@@ -196,6 +213,7 @@ def youtube(name, queries, max_videos):
 def wikiquote(name):
     """Sourced quotations from Wikiquote, one per line. Short but real words of the person."""
     def fetch():
+        time.sleep(1.5)
         d = json.loads(get("https://en.wikiquote.org/w/api.php?action=parse&prop=text&format=json&redirects=1&page=" + urllib.parse.quote(name)))
         body = d["parse"]["text"]["*"]
         # keep the main quotation lists, drop the "About"/"Misattributed"/"Disputed" sections
