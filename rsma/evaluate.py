@@ -105,8 +105,8 @@ def main():
             report["baseline_memory"] = stream_eval(base, data_b, sa, n_streams=8)
             torch.save(curve_b, os.path.join("runs", args.baseline, "adaptation_curve.pt"))
         def stream_src(n):
-            for _ in range(n):
-                x, y, _ = data.batch(1)
+            # persistent-rule stream (rules last ~2 windows), the regime the model is trained for
+            for x, y, _ in data.stream(1, n):
                 yield x, y
         holdout = [data.batch(16)[:2] for _ in range(2)]
     else:
