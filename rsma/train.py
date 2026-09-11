@@ -19,6 +19,7 @@ from .model import RSMA
 from .data.synthetic import RuleSwitchMarkov
 from .data.text import CharText
 from .data.tokens import TokenText
+from .data.figures import FigureText
 
 
 def get_device():
@@ -35,6 +36,12 @@ def make_data(args, device):
         val = RuleSwitchMarkov(vocab=args.vocab, seq_len=args.seq_len, n_switches=args.n_switches, seed=args.seed + 1000, device=device)
         vocab = args.vocab
         return train, val, vocab
+    if args.task == "figures":
+        from transformers import AutoTokenizer
+        tok = AutoTokenizer.from_pretrained(args.graft)
+        ds = FigureText(tok, seq_len=args.seq_len, seed=args.seed, device=device)
+        print("figures:", ds.summary())
+        return ds, ds, ds.vocab
     if args.task == "tokens":
         sources = {k: float(v) for k, v in (kv.split("=") for kv in args.sources.split(","))} if args.sources else None
         ds = TokenText(seq_len=args.seq_len, sources=sources, seed=args.seed, device=device)
@@ -126,7 +133,9 @@ def evaluate(model, data, args, n=8):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--task", default="synthetic", choices=["synthetic", "text", "tokens"])
+    ap.add_argument("--task", default="synthetic", choices=["synthetic", "text", "tokens", "figures"])
+    ap.add_argument("--graft", default=None, help="Hugging Face base model to graft RSMA onto (frozen base + adapters)")
+    ap.add_argument("--lora-r", type=int, default=16)
     ap.add_argument("--sources", default=None, help='token source weights, e.g. "wikitext=0.6,gutenberg=0.2,malcolmx=0.2"')
     ap.add_argument("--init-from", default=None, help="run name whose checkpoint initializes the model (fine-tuning)")
     ap.add_argument("--fast-heads", type=int, default=4)
@@ -165,13 +174,21 @@ def main():
         selfmodel_loss_weight=args.sm_weight, tier=args.tier, stream_len=args.stream,
     )
     cfg.fast_heads = args.fast_heads
-    model = RSMA(cfg).to(device)
+    if args.graft:
+        from .graft import GraftedRSMA
+        model = GraftedRSMA(args.graft, cfg, lora_r=args.lora_r).to(device)
+        cfg = model.cfg
+        cfg.fast_heads = cfg.d_model // 64
+        for fl in model.fast:  # rebuild is not needed: heads were set from cfg before construction
+            pass
+    else:
+        model = RSMA(cfg).to(device)
     if args.init_from:
         ck = torch.load(os.path.join("runs", args.init_from, "ckpt.pt"), map_location=device)
         missing, unexpected = model.load_state_dict(ck["model"], strict=False)
         print(f"initialized from runs/{args.init_from} (missing {len(missing)}, unexpected {len(unexpected)})")
-    print(f"device={device} params={model.n_params()/1e6:.2f}M fast_layers={model.fast_layer_ids}")
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, betas=(0.9, 0.95), weight_decay=0.1)
+    print(f"device={device} params={model.n_params()/1e6:.2f}M trainable={model.n_params(True)/1e6:.2f}M fast_layers={model.fast_layer_ids}")
+    opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, betas=(0.9, 0.95), weight_decay=0.1)
 
     def lr_at(step):
         if step < args.warmup:
@@ -184,6 +201,12 @@ def main():
     meta = {"cfg": cfg.to_dict(), "args": vars(args)}
     if args.task == "text":
         meta["vocab_chars"] = train_data.itos
+    if args.task == "figures":
+        from transformers import AutoTokenizer
+        tok = AutoTokenizer.from_pretrained(args.graft)
+        ds = FigureText(tok, seq_len=args.seq_len, seed=args.seed, device=device)
+        print("figures:", ds.summary())
+        return ds, ds, ds.vocab
     if args.task == "tokens":
         meta["tokenizer"] = "data_cache/tokens/tokenizer.json"
     json.dump(meta, open(os.path.join(run_dir, "config.json"), "w"), indent=1)
@@ -235,7 +258,10 @@ def main():
         if step % args.eval_every == 0 or step == args.steps:
             rec.update(evaluate(model, val_data, args))
             print(f"  eval step {step}: " + " ".join(f"{k}={v:.4f}" for k, v in rec.items() if k.startswith(("val", "stream"))))
-            torch.save({"cfg": cfg.to_dict(), "model": model.state_dict(), "step": step}, os.path.join(run_dir, "ckpt.pt"))
+            if args.graft:
+                model.save(os.path.join(run_dir, "ckpt.pt"), extra={"step": step, "system_prompt": getattr(train_data, "system_prompt", None), "persona_name": getattr(train_data, "persona_name", None)})
+            else:
+                torch.save({"cfg": cfg.to_dict(), "model": model.state_dict(), "step": step}, os.path.join(run_dir, "ckpt.pt"))
         log.write(json.dumps(rec) + "\n")
         log.flush()
     log.close()

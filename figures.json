@@ -1,0 +1,1177 @@
+{
+ "persona_name": "Mentor",
+ "figures": [
+  {
+   "name": "Malcolm X",
+   "domain": "history",
+   "local": "data_cache/malcolmx.txt"
+  },
+  {
+   "name": "Mark Dean",
+   "domain": "software",
+   "youtube": [
+    "Mark Dean IBM engineer interview",
+    "Mark Dean computer scientist talk"
+   ]
+  },
+  {
+   "name": "Marian Croak",
+   "domain": "software",
+   "youtube": [
+    "Marian Croak interview",
+    "Marian Croak Google talk"
+   ]
+  },
+  {
+   "name": "Kimberly Bryant",
+   "domain": "software",
+   "youtube": [
+    "Kimberly Bryant Black Girls Code talk",
+    "Kimberly Bryant interview"
+   ]
+  },
+  {
+   "name": "Ayanna Howard",
+   "domain": "technology",
+   "youtube": [
+    "Ayanna Howard robotics talk",
+    "Ayanna Howard interview"
+   ]
+  },
+  {
+   "name": "Jerry Lawson",
+   "domain": "technology",
+   "youtube": [
+    "Jerry Lawson video game pioneer interview"
+   ]
+  },
+  {
+   "name": "Lisa Gelobter",
+   "domain": "technology",
+   "youtube": [
+    "Lisa Gelobter talk",
+    "Lisa Gelobter interview"
+   ]
+  },
+  {
+   "name": "John Henry Thompson",
+   "domain": "software",
+   "youtube": [
+    "John Henry Thompson Lingo inventor interview"
+   ]
+  },
+  {
+   "name": "Robert F. Smith",
+   "domain": "finance",
+   "youtube": [
+    "Robert F. Smith commencement speech",
+    "Robert F. Smith interview",
+    "Robert F. Smith Vista Equity talk"
+   ]
+  },
+  {
+   "name": "Mellody Hobson",
+   "domain": "finance",
+   "youtube": [
+    "Mellody Hobson TED talk",
+    "Mellody Hobson interview",
+    "Mellody Hobson commencement"
+   ]
+  },
+  {
+   "name": "Reginald F. Lewis",
+   "domain": "business",
+   "youtube": [
+    "Reginald Lewis interview TLC Beatrice"
+   ]
+  },
+  {
+   "name": "Ken Chenault",
+   "domain": "business",
+   "youtube": [
+    "Ken Chenault interview leadership",
+    "Kenneth Chenault talk"
+   ]
+  },
+  {
+   "name": "Ursula Burns",
+   "domain": "business",
+   "youtube": [
+    "Ursula Burns interview",
+    "Ursula Burns commencement speech"
+   ]
+  },
+  {
+   "name": "Oprah Winfrey",
+   "domain": "business",
+   "youtube": [
+    "Oprah Winfrey commencement speech",
+    "Oprah Winfrey Stanford talk"
+   ]
+  },
+  {
+   "name": "Daymond John",
+   "domain": "business",
+   "youtube": [
+    "Daymond John keynote",
+    "Daymond John interview entrepreneurship"
+   ]
+  },
+  {
+   "name": "Madam C. J. Walker",
+   "domain": "business",
+   "blackpast": true
+  },
+  {
+   "name": "Maggie Lena Walker",
+   "domain": "finance",
+   "blackpast": true
+  },
+  {
+   "name": "Booker T. Washington",
+   "domain": "education",
+   "gutenberg": [
+    2376,
+    14875,
+    11185
+   ],
+   "blackpast": true
+  },
+  {
+   "name": "Thurgood Marshall",
+   "domain": "legal",
+   "wikisource_author": "Thurgood Marshall",
+   "blackpast": true
+  },
+  {
+   "name": "Ketanji Brown Jackson",
+   "domain": "legal",
+   "wikisource_author": "Ketanji Brown Jackson",
+   "youtube": [
+    "Ketanji Brown Jackson speech",
+    "Ketanji Brown Jackson lecture"
+   ]
+  },
+  {
+   "name": "Barbara Jordan",
+   "domain": "legal",
+   "blackpast": true,
+   "youtube": [
+    "Barbara Jordan speech"
+   ]
+  },
+  {
+   "name": "Constance Baker Motley",
+   "domain": "legal",
+   "blackpast": true,
+   "youtube": [
+    "Constance Baker Motley interview"
+   ]
+  },
+  {
+   "name": "Bryan Stevenson",
+   "domain": "legal",
+   "youtube": [
+    "Bryan Stevenson TED talk",
+    "Bryan Stevenson speech",
+    "Bryan Stevenson interview"
+   ]
+  },
+  {
+   "name": "Sherrilyn Ifill",
+   "domain": "legal",
+   "youtube": [
+    "Sherrilyn Ifill lecture",
+    "Sherrilyn Ifill interview"
+   ]
+  },
+  {
+   "name": "Charles Hamilton Houston",
+   "domain": "legal",
+   "blackpast": true
+  },
+  {
+   "name": "Howard Thurman",
+   "domain": "meditation",
+   "youtube": [
+    "Howard Thurman sermon",
+    "Howard Thurman lecture"
+   ]
+  },
+  {
+   "name": "Lama Rod Owens",
+   "domain": "meditation",
+   "youtube": [
+    "Lama Rod Owens dharma talk",
+    "Lama Rod Owens meditation talk"
+   ]
+  },
+  {
+   "name": "angel Kyodo williams",
+   "domain": "meditation",
+   "youtube": [
+    "angel Kyodo williams dharma talk",
+    "angel Kyodo williams interview"
+   ]
+  },
+  {
+   "name": "Ruth King",
+   "domain": "meditation",
+   "youtube": [
+    "Ruth King mindful of race talk"
+   ]
+  },
+  {
+   "name": "Rhonda Magee",
+   "domain": "meditation",
+   "youtube": [
+    "Rhonda Magee mindfulness talk"
+   ]
+  },
+  {
+   "name": "Jan Willis",
+   "domain": "meditation",
+   "youtube": [
+    "Jan Willis Buddhism talk"
+   ]
+  },
+  {
+   "name": "Isaiah Jackson",
+   "domain": "crypto",
+   "youtube": [
+    "Isaiah Jackson Bitcoin and Black America interview",
+    "Isaiah Jackson bitcoin talk"
+   ]
+  },
+  {
+   "name": "Lamar Wilson",
+   "domain": "crypto",
+   "youtube": [
+    "Lamar Wilson bitcoin interview",
+    "Lamar Wilson Black Bitcoin Billionaire"
+   ]
+  },
+  {
+   "name": "Tonya Evans",
+   "domain": "crypto",
+   "youtube": [
+    "Tonya Evans crypto law talk",
+    "Tonya Evans Tech Intersect"
+   ]
+  },
+  {
+   "name": "Cleve Mesidor",
+   "domain": "crypto",
+   "youtube": [
+    "Cleve Mesidor blockchain talk"
+   ]
+  },
+  {
+   "name": "Carter G. Woodson",
+   "domain": "history",
+   "blackpast": true,
+   "urls": [
+    "https://www.gutenberg.org/cache/epub/73246/pg73246.txt"
+   ]
+  },
+  {
+   "name": "W. E. B. Du Bois",
+   "domain": "history",
+   "gutenberg": [
+    408,
+    15210,
+    15359
+   ],
+   "blackpast": true
+  },
+  {
+   "name": "Anna Julia Cooper",
+   "domain": "history",
+   "gutenberg": [
+    61741
+   ],
+   "blackpast": true
+  },
+  {
+   "name": "Arturo Schomburg",
+   "domain": "history",
+   "blackpast": true
+  },
+  {
+   "name": "John Hope Franklin",
+   "domain": "history",
+   "youtube": [
+    "John Hope Franklin lecture",
+    "John Hope Franklin interview"
+   ]
+  },
+  {
+   "name": "Henry Louis Gates Jr.",
+   "domain": "history",
+   "youtube": [
+    "Henry Louis Gates lecture",
+    "Henry Louis Gates interview"
+   ]
+  },
+  {
+   "name": "Frederick Douglass",
+   "domain": "writing",
+   "gutenberg": [
+    23,
+    202,
+    99
+   ],
+   "blackpast": true
+  },
+  {
+   "name": "Mary McLeod Bethune",
+   "domain": "education",
+   "blackpast": true
+  },
+  {
+   "name": "Fanny Jackson Coppin",
+   "domain": "education",
+   "gutenberg": [
+    62735
+   ]
+  },
+  {
+   "name": "Geoffrey Canada",
+   "domain": "education",
+   "youtube": [
+    "Geoffrey Canada TED talk",
+    "Geoffrey Canada speech"
+   ]
+  },
+  {
+   "name": "Marva Collins",
+   "domain": "education",
+   "youtube": [
+    "Marva Collins interview"
+   ]
+  },
+  {
+   "name": "George Washington Carver",
+   "domain": "science",
+   "gutenberg_search": "Carver, George Washington",
+   "blackpast": true
+  },
+  {
+   "name": "Benjamin Banneker",
+   "domain": "science",
+   "blackpast": true,
+   "gutenberg_search": "Banneker"
+  },
+  {
+   "name": "Katherine Johnson",
+   "domain": "science",
+   "youtube": [
+    "Katherine Johnson NASA interview"
+   ]
+  },
+  {
+   "name": "Neil deGrasse Tyson",
+   "domain": "science",
+   "youtube": [
+    "Neil deGrasse Tyson lecture",
+    "Neil deGrasse Tyson talk",
+    "Neil deGrasse Tyson interview"
+   ]
+  },
+  {
+   "name": "Mae Jemison",
+   "domain": "science",
+   "youtube": [
+    "Mae Jemison TED talk",
+    "Mae Jemison speech"
+   ]
+  },
+  {
+   "name": "Shirley Ann Jackson",
+   "domain": "science",
+   "youtube": [
+    "Shirley Ann Jackson lecture",
+    "Shirley Ann Jackson interview"
+   ]
+  },
+  {
+   "name": "Paul Laurence Dunbar",
+   "domain": "writing",
+   "gutenberg_search": "Dunbar, Paul Laurence"
+  },
+  {
+   "name": "Charles W. Chesnutt",
+   "domain": "writing",
+   "gutenberg_search": "Chesnutt, Charles"
+  },
+  {
+   "name": "James Weldon Johnson",
+   "domain": "writing",
+   "gutenberg": [
+    11012,
+    17884
+   ]
+  },
+  {
+   "name": "Jean Toomer",
+   "domain": "writing",
+   "gutenberg_search": "Toomer, Jean"
+  },
+  {
+   "name": "Claude McKay",
+   "domain": "writing",
+   "gutenberg_search": "McKay, Claude"
+  },
+  {
+   "name": "Phillis Wheatley",
+   "domain": "writing",
+   "gutenberg_search": "Wheatley, Phillis"
+  },
+  {
+   "name": "James Baldwin",
+   "domain": "writing",
+   "youtube": [
+    "James Baldwin speech",
+    "James Baldwin debate Cambridge",
+    "James Baldwin interview"
+   ]
+  },
+  {
+   "name": "Toni Morrison",
+   "domain": "writing",
+   "youtube": [
+    "Toni Morrison Nobel lecture",
+    "Toni Morrison lecture",
+    "Toni Morrison interview"
+   ]
+  },
+  {
+   "name": "Maya Angelou",
+   "domain": "writing",
+   "youtube": [
+    "Maya Angelou speech",
+    "Maya Angelou interview"
+   ]
+  },
+  {
+   "name": "Octavia Butler",
+   "domain": "writing",
+   "youtube": [
+    "Octavia Butler interview",
+    "Octavia Butler talk"
+   ]
+  },
+  {
+   "name": "Ida B. Wells",
+   "domain": "writing",
+   "gutenberg": [
+    14975,
+    14977
+   ],
+   "blackpast": true
+  },
+  {
+   "name": "Isaac Newton",
+   "domain": "science",
+   "gutenberg_search": "Newton, Isaac"
+  },
+  {
+   "name": "Charles Darwin",
+   "domain": "science",
+   "gutenberg_search": "Darwin, Charles"
+  },
+  {
+   "name": "Galileo Galilei",
+   "domain": "science",
+   "gutenberg_search": "Galilei, Galileo"
+  },
+  {
+   "name": "Michael Faraday",
+   "domain": "science",
+   "gutenberg_search": "Faraday, Michael"
+  },
+  {
+   "name": "Marie Curie",
+   "domain": "science",
+   "gutenberg_search": "Curie, Marie"
+  },
+  {
+   "name": "Albert Einstein",
+   "domain": "science",
+   "gutenberg_search": "Einstein, Albert",
+   "youtube": [
+    "Albert Einstein speech recording"
+   ]
+  },
+  {
+   "name": "Nikola Tesla",
+   "domain": "science",
+   "gutenberg_search": "Tesla, Nikola"
+  },
+  {
+   "name": "Richard Feynman",
+   "domain": "science",
+   "youtube": [
+    "Richard Feynman lecture",
+    "Richard Feynman interview",
+    "Feynman Messenger lectures"
+   ]
+  },
+  {
+   "name": "Carl Sagan",
+   "domain": "science",
+   "youtube": [
+    "Carl Sagan lecture",
+    "Carl Sagan interview"
+   ]
+  },
+  {
+   "name": "Stephen Hawking",
+   "domain": "science",
+   "youtube": [
+    "Stephen Hawking lecture",
+    "Stephen Hawking talk"
+   ]
+  },
+  {
+   "name": "Louis Pasteur",
+   "domain": "science",
+   "gutenberg_search": "Pasteur, Louis"
+  },
+  {
+   "name": "Alexander von Humboldt",
+   "domain": "science",
+   "gutenberg_search": "Humboldt, Alexander von"
+  },
+  {
+   "name": "Ada Lovelace",
+   "domain": "software",
+   "gutenberg_search": "Lovelace, Ada",
+   "urls": [
+    "https://www.fourmilab.ch/babbage/sketch.html"
+   ]
+  },
+  {
+   "name": "Charles Babbage",
+   "domain": "technology",
+   "gutenberg_search": "Babbage, Charles"
+  },
+  {
+   "name": "Alan Kay",
+   "domain": "software",
+   "youtube": [
+    "Alan Kay talk",
+    "Alan Kay lecture computing"
+   ]
+  },
+  {
+   "name": "Grace Hopper",
+   "domain": "software",
+   "youtube": [
+    "Grace Hopper lecture",
+    "Grace Hopper interview"
+   ]
+  },
+  {
+   "name": "Linus Torvalds",
+   "domain": "software",
+   "youtube": [
+    "Linus Torvalds talk",
+    "Linus Torvalds interview"
+   ]
+  },
+  {
+   "name": "Andrej Karpathy",
+   "domain": "software",
+   "youtube": [
+    "Andrej Karpathy lecture",
+    "Andrej Karpathy talk"
+   ]
+  },
+  {
+   "name": "Geoffrey Hinton",
+   "domain": "technology",
+   "youtube": [
+    "Geoffrey Hinton lecture",
+    "Geoffrey Hinton interview"
+   ]
+  },
+  {
+   "name": "Ilya Sutskever",
+   "domain": "technology",
+   "youtube": [
+    "Ilya Sutskever talk",
+    "Ilya Sutskever interview"
+   ]
+  },
+  {
+   "name": "Demis Hassabis",
+   "domain": "technology",
+   "youtube": [
+    "Demis Hassabis lecture",
+    "Demis Hassabis interview"
+   ]
+  },
+  {
+   "name": "Steve Jobs",
+   "domain": "technology",
+   "youtube": [
+    "Steve Jobs speech",
+    "Steve Jobs interview"
+   ]
+  },
+  {
+   "name": "Bill Gates",
+   "domain": "technology",
+   "youtube": [
+    "Bill Gates talk",
+    "Bill Gates interview"
+   ]
+  },
+  {
+   "name": "Elon Musk",
+   "domain": "technology",
+   "youtube": [
+    "Elon Musk interview",
+    "Elon Musk talk"
+   ]
+  },
+  {
+   "name": "Jeff Bezos",
+   "domain": "business",
+   "youtube": [
+    "Jeff Bezos interview",
+    "Jeff Bezos speech"
+   ]
+  },
+  {
+   "name": "Tim Berners-Lee",
+   "domain": "technology",
+   "youtube": [
+    "Tim Berners-Lee talk",
+    "Tim Berners-Lee interview"
+   ]
+  },
+  {
+   "name": "Vint Cerf",
+   "domain": "technology",
+   "youtube": [
+    "Vint Cerf talk",
+    "Vint Cerf interview"
+   ]
+  },
+  {
+   "name": "Paul Graham",
+   "domain": "software",
+   "youtube": [
+    "Paul Graham talk startups",
+    "Paul Graham interview"
+   ]
+  },
+  {
+   "name": "Warren Buffett",
+   "domain": "finance",
+   "youtube": [
+    "Warren Buffett annual meeting",
+    "Warren Buffett interview",
+    "Warren Buffett lecture"
+   ]
+  },
+  {
+   "name": "Charlie Munger",
+   "domain": "finance",
+   "youtube": [
+    "Charlie Munger speech",
+    "Charlie Munger interview"
+   ]
+  },
+  {
+   "name": "Benjamin Franklin",
+   "domain": "business",
+   "gutenberg_search": "Franklin, Benjamin"
+  },
+  {
+   "name": "Andrew Carnegie",
+   "domain": "business",
+   "gutenberg_search": "Carnegie, Andrew"
+  },
+  {
+   "name": "Henry Ford",
+   "domain": "business",
+   "gutenberg_search": "Ford, Henry"
+  },
+  {
+   "name": "John D. Rockefeller",
+   "domain": "business",
+   "gutenberg_search": "Rockefeller, John D."
+  },
+  {
+   "name": "Adam Smith",
+   "domain": "finance",
+   "gutenberg_search": "Smith, Adam"
+  },
+  {
+   "name": "Ray Dalio",
+   "domain": "finance",
+   "youtube": [
+    "Ray Dalio talk",
+    "Ray Dalio interview"
+   ]
+  },
+  {
+   "name": "Peter Lynch",
+   "domain": "finance",
+   "youtube": [
+    "Peter Lynch lecture",
+    "Peter Lynch interview"
+   ]
+  },
+  {
+   "name": "John Bogle",
+   "domain": "finance",
+   "youtube": [
+    "John Bogle interview",
+    "Jack Bogle speech"
+   ]
+  },
+  {
+   "name": "Naval Ravikant",
+   "domain": "business",
+   "youtube": [
+    "Naval Ravikant interview",
+    "Naval Ravikant talk"
+   ]
+  },
+  {
+   "name": "Peter Drucker",
+   "domain": "business",
+   "youtube": [
+    "Peter Drucker interview",
+    "Peter Drucker lecture"
+   ]
+  },
+  {
+   "name": "Oliver Wendell Holmes Jr.",
+   "domain": "legal",
+   "gutenberg_search": "Holmes, Oliver Wendell, Jr.",
+   "wikisource_author": "Oliver Wendell Holmes Jr."
+  },
+  {
+   "name": "Louis Brandeis",
+   "domain": "legal",
+   "gutenberg_search": "Brandeis, Louis",
+   "wikisource_author": "Louis Brandeis"
+  },
+  {
+   "name": "Ruth Bader Ginsburg",
+   "domain": "legal",
+   "wikisource_author": "Ruth Bader Ginsburg",
+   "youtube": [
+    "Ruth Bader Ginsburg lecture",
+    "Ruth Bader Ginsburg interview"
+   ]
+  },
+  {
+   "name": "Antonin Scalia",
+   "domain": "legal",
+   "wikisource_author": "Antonin Scalia",
+   "youtube": [
+    "Antonin Scalia lecture"
+   ]
+  },
+  {
+   "name": "Cicero",
+   "domain": "legal",
+   "gutenberg_search": "Cicero, Marcus Tullius"
+  },
+  {
+   "name": "Learned Hand",
+   "domain": "legal",
+   "wikisource_author": "Learned Hand"
+  },
+  {
+   "name": "Marcus Aurelius",
+   "domain": "meditation",
+   "gutenberg_search": "Marcus Aurelius"
+  },
+  {
+   "name": "Seneca",
+   "domain": "meditation",
+   "gutenberg_search": "Seneca, Lucius Annaeus"
+  },
+  {
+   "name": "Epictetus",
+   "domain": "meditation",
+   "gutenberg_search": "Epictetus"
+  },
+  {
+   "name": "Lao Tzu",
+   "domain": "meditation",
+   "gutenberg_search": "Laozi"
+  },
+  {
+   "name": "The Buddha",
+   "domain": "meditation",
+   "gutenberg_search": "Dhammapada"
+  },
+  {
+   "name": "Thich Nhat Hanh",
+   "domain": "meditation",
+   "youtube": [
+    "Thich Nhat Hanh dharma talk",
+    "Thich Nhat Hanh talk"
+   ]
+  },
+  {
+   "name": "Alan Watts",
+   "domain": "meditation",
+   "youtube": [
+    "Alan Watts lecture",
+    "Alan Watts talk"
+   ]
+  },
+  {
+   "name": "Jon Kabat-Zinn",
+   "domain": "meditation",
+   "youtube": [
+    "Jon Kabat-Zinn talk",
+    "Jon Kabat-Zinn lecture"
+   ]
+  },
+  {
+   "name": "Ram Dass",
+   "domain": "meditation",
+   "youtube": [
+    "Ram Dass lecture",
+    "Ram Dass talk"
+   ]
+  },
+  {
+   "name": "Jiddu Krishnamurti",
+   "domain": "meditation",
+   "youtube": [
+    "Krishnamurti talk",
+    "Krishnamurti dialogue"
+   ]
+  },
+  {
+   "name": "Pema Chodron",
+   "domain": "meditation",
+   "youtube": [
+    "Pema Chodron talk",
+    "Pema Chodron teaching"
+   ]
+  },
+  {
+   "name": "Aristotle",
+   "domain": "meditation",
+   "gutenberg_search": "Aristotle"
+  },
+  {
+   "name": "Plato",
+   "domain": "education",
+   "gutenberg_search": "Plato"
+  },
+  {
+   "name": "Confucius",
+   "domain": "education",
+   "gutenberg_search": "Confucius"
+  },
+  {
+   "name": "Friedrich Nietzsche",
+   "domain": "writing",
+   "gutenberg_search": "Nietzsche, Friedrich"
+  },
+  {
+   "name": "Michel de Montaigne",
+   "domain": "writing",
+   "gutenberg_search": "Montaigne, Michel de"
+  },
+  {
+   "name": "Rene Descartes",
+   "domain": "science",
+   "gutenberg_search": "Descartes, Ren"
+  },
+  {
+   "name": "Baruch Spinoza",
+   "domain": "meditation",
+   "gutenberg_search": "Spinoza, Benedictus de"
+  },
+  {
+   "name": "Immanuel Kant",
+   "domain": "meditation",
+   "gutenberg_search": "Kant, Immanuel"
+  },
+  {
+   "name": "Satoshi Nakamoto",
+   "domain": "crypto",
+   "urls": [
+    "https://bitcoin.org/bitcoin.pdf"
+   ],
+   "youtube": [
+    "Satoshi Nakamoto writings read"
+   ]
+  },
+  {
+   "name": "Vitalik Buterin",
+   "domain": "crypto",
+   "youtube": [
+    "Vitalik Buterin talk",
+    "Vitalik Buterin interview"
+   ]
+  },
+  {
+   "name": "Andreas Antonopoulos",
+   "domain": "crypto",
+   "youtube": [
+    "Andreas Antonopoulos talk",
+    "Andreas Antonopoulos lecture bitcoin"
+   ]
+  },
+  {
+   "name": "Nick Szabo",
+   "domain": "crypto",
+   "youtube": [
+    "Nick Szabo talk",
+    "Nick Szabo interview"
+   ]
+  },
+  {
+   "name": "Hal Finney",
+   "domain": "crypto",
+   "youtube": [
+    "Hal Finney interview"
+   ]
+  },
+  {
+   "name": "Michael Saylor",
+   "domain": "crypto",
+   "youtube": [
+    "Michael Saylor talk bitcoin",
+    "Michael Saylor interview"
+   ]
+  },
+  {
+   "name": "Balaji Srinivasan",
+   "domain": "crypto",
+   "youtube": [
+    "Balaji Srinivasan talk",
+    "Balaji Srinivasan interview"
+   ]
+  },
+  {
+   "name": "Herodotus",
+   "domain": "history",
+   "gutenberg_search": "Herodotus"
+  },
+  {
+   "name": "Thucydides",
+   "domain": "history",
+   "gutenberg_search": "Thucydides"
+  },
+  {
+   "name": "Plutarch",
+   "domain": "history",
+   "gutenberg_search": "Plutarch"
+  },
+  {
+   "name": "Edward Gibbon",
+   "domain": "history",
+   "gutenberg_search": "Gibbon, Edward"
+  },
+  {
+   "name": "Abraham Lincoln",
+   "domain": "history",
+   "gutenberg_search": "Lincoln, Abraham"
+  },
+  {
+   "name": "Theodore Roosevelt",
+   "domain": "history",
+   "gutenberg_search": "Roosevelt, Theodore"
+  },
+  {
+   "name": "Martin Luther King Jr.",
+   "domain": "history",
+   "blackpast": true,
+   "youtube": [
+    "Martin Luther King speech full"
+   ]
+  },
+  {
+   "name": "Nelson Mandela",
+   "domain": "history",
+   "youtube": [
+    "Nelson Mandela speech",
+    "Nelson Mandela interview"
+   ]
+  },
+  {
+   "name": "Marcus Garvey",
+   "domain": "history",
+   "blackpast": true
+  },
+  {
+   "name": "Yuval Noah Harari",
+   "domain": "history",
+   "youtube": [
+    "Yuval Noah Harari lecture",
+    "Yuval Noah Harari talk"
+   ]
+  },
+  {
+   "name": "Will Durant",
+   "domain": "history",
+   "youtube": [
+    "Will Durant lecture",
+    "Will Durant interview"
+   ]
+  },
+  {
+   "name": "Niall Ferguson",
+   "domain": "history",
+   "youtube": [
+    "Niall Ferguson lecture"
+   ]
+  },
+  {
+   "name": "Sun Tzu",
+   "domain": "history",
+   "gutenberg_search": "Sunzi"
+  },
+  {
+   "name": "Niccolo Machiavelli",
+   "domain": "history",
+   "gutenberg_search": "Machiavelli, Niccol"
+  },
+  {
+   "name": "Leonardo da Vinci",
+   "domain": "technology",
+   "gutenberg_search": "Leonardo, da Vinci"
+  },
+  {
+   "name": "Maria Montessori",
+   "domain": "education",
+   "gutenberg_search": "Montessori, Maria"
+  },
+  {
+   "name": "John Dewey",
+   "domain": "education",
+   "gutenberg_search": "Dewey, John"
+  },
+  {
+   "name": "Sal Khan",
+   "domain": "education",
+   "youtube": [
+    "Sal Khan talk",
+    "Sal Khan interview"
+   ]
+  },
+  {
+   "name": "Socrates",
+   "domain": "education",
+   "gutenberg_search": "Xenophon"
+  },
+  {
+   "name": "William Shakespeare",
+   "domain": "writing",
+   "gutenberg": [
+    100
+   ]
+  },
+  {
+   "name": "Leo Tolstoy",
+   "domain": "writing",
+   "gutenberg_search": "Tolstoy, Leo, graf"
+  },
+  {
+   "name": "Fyodor Dostoevsky",
+   "domain": "writing",
+   "gutenberg_search": "Dostoyevsky, Fyodor"
+  },
+  {
+   "name": "Mark Twain",
+   "domain": "writing",
+   "gutenberg_search": "Twain, Mark"
+  },
+  {
+   "name": "Ralph Waldo Emerson",
+   "domain": "writing",
+   "gutenberg_search": "Emerson, Ralph Waldo"
+  },
+  {
+   "name": "Henry David Thoreau",
+   "domain": "writing",
+   "gutenberg_search": "Thoreau, Henry David"
+  },
+  {
+   "name": "Walt Whitman",
+   "domain": "writing",
+   "gutenberg_search": "Whitman, Walt"
+  },
+  {
+   "name": "Emily Dickinson",
+   "domain": "writing",
+   "gutenberg_search": "Dickinson, Emily"
+  },
+  {
+   "name": "Homer",
+   "domain": "writing",
+   "gutenberg_search": "Homer"
+  },
+  {
+   "name": "Dante Alighieri",
+   "domain": "writing",
+   "gutenberg_search": "Dante Alighieri"
+  },
+  {
+   "name": "Miguel de Cervantes",
+   "domain": "writing",
+   "gutenberg_search": "Cervantes Saavedra, Miguel de"
+  },
+  {
+   "name": "Jane Austen",
+   "domain": "writing",
+   "gutenberg_search": "Austen, Jane"
+  },
+  {
+   "name": "Franz Kafka",
+   "domain": "writing",
+   "gutenberg_search": "Kafka, Franz"
+  },
+  {
+   "name": "Virginia Woolf",
+   "domain": "writing",
+   "gutenberg_search": "Woolf, Virginia"
+  },
+  {
+   "name": "James Joyce",
+   "domain": "writing",
+   "gutenberg_search": "Joyce, James"
+  },
+  {
+   "name": "Charles Dickens",
+   "domain": "writing",
+   "gutenberg_search": "Dickens, Charles"
+  },
+  {
+   "name": "Oscar Wilde",
+   "domain": "writing",
+   "gutenberg_search": "Wilde, Oscar"
+  },
+  {
+   "name": "Arthur Conan Doyle",
+   "domain": "writing",
+   "gutenberg_search": "Doyle, Arthur Conan"
+  },
+  {
+   "name": "Mary Shelley",
+   "domain": "writing",
+   "gutenberg_search": "Shelley, Mary Wollstonecraft"
+  },
+  {
+   "name": "Rumi",
+   "domain": "writing",
+   "gutenberg_search": "Jalal al-Din Rumi"
+  }
+ ]
+}
