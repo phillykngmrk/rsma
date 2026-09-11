@@ -642,6 +642,9 @@
    "youtube": [
     "Jeff Bezos interview",
     "Jeff Bezos speech"
+   ],
+   "urls": [
+    "https://www.sec.gov/Archives/edgar/data/1018724/000119312513151836/d511111dex991.htm"
    ]
   },
   {
@@ -666,6 +669,18 @@
    "youtube": [
     "Paul Graham talk startups",
     "Paul Graham interview"
+   ],
+   "urls": [
+    "https://paulgraham.com/ds.html",
+    "https://paulgraham.com/growth.html",
+    "https://paulgraham.com/wealth.html",
+    "https://paulgraham.com/hp.html",
+    "https://paulgraham.com/startupideas.html",
+    "https://paulgraham.com/greatwork.html",
+    "https://paulgraham.com/do.html",
+    "https://paulgraham.com/talk.html",
+    "https://paulgraham.com/founders.html",
+    "https://paulgraham.com/before.html"
    ]
   },
   {
@@ -675,6 +690,29 @@
     "Warren Buffett annual meeting",
     "Warren Buffett interview",
     "Warren Buffett lecture"
+   ],
+   "urls": [
+    "https://www.berkshirehathaway.com/letters/1977.html",
+    "https://www.berkshirehathaway.com/letters/1978.html",
+    "https://www.berkshirehathaway.com/letters/1979.html",
+    "https://www.berkshirehathaway.com/letters/1980.html",
+    "https://www.berkshirehathaway.com/letters/1981.html",
+    "https://www.berkshirehathaway.com/letters/1982.html",
+    "https://www.berkshirehathaway.com/letters/1983.html",
+    "https://www.berkshirehathaway.com/letters/1984.html",
+    "https://www.berkshirehathaway.com/letters/1985.html",
+    "https://www.berkshirehathaway.com/letters/1986.html",
+    "https://www.berkshirehathaway.com/letters/1987.html",
+    "https://www.berkshirehathaway.com/letters/1988.html",
+    "https://www.berkshirehathaway.com/letters/1989.html",
+    "https://www.berkshirehathaway.com/letters/1990.html",
+    "https://www.berkshirehathaway.com/letters/1991.html",
+    "https://www.berkshirehathaway.com/letters/1992.html",
+    "https://www.berkshirehathaway.com/letters/1993.html",
+    "https://www.berkshirehathaway.com/letters/1994.html",
+    "https://www.berkshirehathaway.com/letters/1995.html",
+    "https://www.berkshirehathaway.com/letters/1996.html",
+    "https://www.berkshirehathaway.com/letters/1997.html"
    ]
   },
   {
@@ -812,7 +850,8 @@
   {
    "name": "The Buddha",
    "domain": "meditation",
-   "gutenberg_search": "Dhammapada"
+   "gutenberg_search": "Dhammapada",
+   "wikiquote_page": "Gautama Buddha"
   },
   {
    "name": "Thich Nhat Hanh",
@@ -906,7 +945,8 @@
    "name": "Satoshi Nakamoto",
    "domain": "crypto",
    "urls": [
-    "https://bitcoin.org/bitcoin.pdf"
+    "https://bitcoin.org/bitcoin.pdf",
+    "https://nakamotoinstitute.org/library/bitcoin/"
    ],
    "youtube": [
     "Satoshi Nakamoto writings read"
@@ -1069,7 +1109,8 @@
   {
    "name": "Socrates",
    "domain": "education",
-   "gutenberg_search": "Xenophon"
+   "gutenberg_search": "Xenophon",
+   "wikiquote_page": "Socrates"
   },
   {
    "name": "William Shakespeare",
@@ -1116,7 +1157,8 @@
   {
    "name": "Homer",
    "domain": "writing",
-   "gutenberg_search": "Homer"
+   "gutenberg_search": "Homer",
+   "wikiquote_page": "Homer"
   },
   {
    "name": "Dante Alighieri",

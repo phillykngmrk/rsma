@@ -185,6 +185,26 @@ def youtube(name, queries, max_videos):
     return docs
 
 
+def wikiquote(name):
+    """Sourced quotations from Wikiquote, one per line. Short but real words of the person."""
+    def fetch():
+        d = json.loads(get("https://en.wikiquote.org/w/api.php?action=parse&prop=text&format=json&redirects=1&page=" + urllib.parse.quote(name)))
+        body = d["parse"]["text"]["*"]
+        # keep the main quotation lists, drop the "About"/"Misattributed"/"Disputed" sections
+        for cut in ("Misattributed", "Disputed", "Quotes_about", "About_"):
+            i = body.find('id="' + cut)
+            if i > 0:
+                body = body[:i]
+        lis = re.findall(r"<li>(.*?)</li>", body, re.S)
+        out = []
+        for li in lis:
+            t = strip_html(re.sub(r"<ul>.*?</ul>", "", li, flags=re.S)).replace("\n", " ").strip()
+            if 40 < len(t) < 2000:
+                out.append(t)
+        return "\n\n".join(out)
+    return cached("wikiquote_" + slug(name), fetch)
+
+
 def url_text(u):
     def fetch():
         t = get(u)
@@ -214,6 +234,8 @@ def build(fig, max_videos):
         docs += youtube(fig["name"], fig["youtube"], max_videos)
     for u in fig.get("urls", []):
         docs.append((f"url {u}", url_text(u)))
+    if fig.get("wikiquote", True):
+        docs.append(("wikiquote", wikiquote(fig.get("wikiquote_page") or fig["name"])))
     if fig.get("local"):
         docs.append((f"local {fig['local']}", open(os.path.join(ROOT, fig["local"]), encoding="utf-8").read()))
     docs = [(s, t) for s, t in docs if t and len(t) > 500]
