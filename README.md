@@ -117,6 +117,21 @@ python3 -m venv .venv
 
 ## Results so far
 
+### From-scratch 19M model, BPE tokens (2026-09-11)
+
+Pretrained 1500 stream steps on WikiText-103 + Gutenberg + Malcolm X, fine-tuned 300 steps on
+Malcolm X with Gutenberg replay. The strongest memory result so far, and the weakest language:
+
+| Metric | value |
+|---|---|
+| loss on first 32 tokens of later windows, memory carried vs reset | 4.02 vs 4.46 |
+| persistent stream (tier 3, 16 windows), carried vs reset | 3.87 vs 3.89 |
+| self-model benefit forecast correlation | 0.93 |
+| sample quality | word salad |
+
+Memory and self-modeling work at this scale; language does not. That is the trade the grafted
+model resolves, by borrowing language from a pretrained base.
+
 ### Grafted model (2026-09-11)
 
 Qwen2.5-0.5B-Instruct frozen, 4 fast-weight layers at blocks 5/11/17/23, LoRA rank 16 on
