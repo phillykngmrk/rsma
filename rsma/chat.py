@@ -46,6 +46,8 @@ class SelfState:
         self.rollbacks = 0
         self.events = []
         self.recent = []  # recent conversation token ids for sleep
+        self.started = None   # first session time
+        self.sessions = 0
 
     def load(self, device):
         f = os.path.join(self.path, "state.pt")
@@ -57,12 +59,15 @@ class SelfState:
             self.rollbacks = d["rollbacks"]
             self.events = d["events"]
             self.recent = d["recent"]
+            self.started = d.get("started")
+            self.sessions = d.get("sessions", 0)
             return True
         return False
 
     def save(self):
         torch.save({"fast": self.fast, "ema_loss": self.ema_loss, "turns": self.turns,
-                    "rollbacks": self.rollbacks, "events": self.events, "recent": self.recent[-200000:]},
+                    "rollbacks": self.rollbacks, "events": self.events, "recent": self.recent[-200000:],
+                    "started": self.started, "sessions": self.sessions},
                    os.path.join(self.path, "state.pt"))
 
 

@@ -54,11 +54,21 @@ class GraftChat:
         self.frozen = False
         self.persona_name = persona_name or ck.get("persona_name") or "Sankofa"
         self.system_prompt = persona_prompt(self.persona_name) if persona_name else (ck.get("system_prompt") or persona_prompt(self.persona_name))
-        self.messages = [{"role": "system", "content": self.system_prompt}]
-        self.transcript = self.tok(self.tok.apply_chat_template(self.messages, tokenize=False), add_special_tokens=False).input_ids
         self.state = SelfState(os.path.join(self.run_dir, "self"))
         if self.state.load(device):
             print(f"[resumed self-state: {self.state.turns} turns, {len(self.state.events)} events]")
+        if not self.state.started:
+            self.state.started = time.time()
+        self.state.sessions += 1
+        # grounding facts, so it need not guess at the calendar or its own history
+        studied = sum(1 for e in self.state.events if e.get("kind") == "sleep" and e.get("accepted"))
+        merged = sum(1 for e in self.state.events if e.get("kind") == "merge" and e.get("accepted"))
+        grounding = (f" Today is {time.strftime('%A, %B %d, %Y')}. This is conversation {self.state.sessions} with this person; "
+                     f"you have exchanged {self.state.turns} turns with them so far, beginning on {time.strftime('%B %d, %Y', time.localtime(self.state.started))}. "
+                     f"So far {merged} of your self-modifications have been consolidated into your permanent weights and "
+                     f"{studied} sleep passes have been kept.")
+        self.messages = [{"role": "system", "content": self.system_prompt + grounding}]
+        self.transcript = self.tok(self.tok.apply_chat_template(self.messages, tokenize=False), add_special_tokens=False).input_ids
         try:
             self.ds = FigureText(self.tok, seq_len=self.cfg.seq_len, device=device, persona_name=self.persona_name)
             self.holdout = [self.ds.batch(4, "val") for _ in range(2)]
