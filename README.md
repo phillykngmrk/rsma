@@ -17,6 +17,43 @@ consolidates the rewrites into its permanent parameters.
 3. **Consolidation.** Fast-weight deltas are periodically merged into the slow weights, verified on
    a held-out buffer, and either accepted or rolled back.
 
+## Two ways to run it
+
+**From scratch** (`rsma/model.py`): a small transformer trained here, with the fast-weight
+sublayers in selected blocks. Clean science, small capability.
+
+**Grafted** (`rsma/graft.py`): the same fast-weight sublayers and self-model inserted between the
+blocks of a frozen open-weight base model (default Qwen2.5-0.5B-Instruct), plus low-rank adapters
+on the base's attention so it can take on new voices. Only about 7M parameters are trainable, the
+base's abilities are preserved at initialization, and every part of the self-modification loop is
+shared with the from-scratch model. This is the path to a model that converses and reasons while
+still rewriting itself from what it reads. The base is a flag: a larger base with a thinking mode
+is the next step up in reasoning.
+
+```
+# corpus: ~170 figures across science, software, technology, finance, business, law, meditation,
+# philosophy, crypto, history, education and writing (figures.json), from Gutenberg, Wikisource,
+# BlackPast and YouTube transcripts
+.venv/bin/python scripts/build_figures_corpus.py --skip-youtube     # public-domain sources
+.venv/bin/python scripts/build_figures_corpus.py --yt-sleep 4       # add talks and interviews
+
+# train the graft on the blended corpus
+.venv/bin/python -m rsma.train --task figures --graft Qwen/Qwen2.5-0.5B-Instruct --name mentor \
+    --steps 600 --stream 4 --batch 2 --seq-len 512 --chunk 32 --fast-layers 5,11,17,23 --lr 2e-4
+
+# talk to it (persistent self-state in runs/mentor/self/, consolidation rewrites ckpt.pt)
+.venv/bin/python -m rsma.chat_graft --run mentor --tier 3
+
+# let it study on its own: feeds, Wikipedia, arXiv from study.json; audit log in runs/mentor/study/
+.venv/bin/python -m rsma.study --run mentor --once
+.venv/bin/python -m rsma.study --run mentor --every 6h
+```
+
+The study loop is how the model learns without you: it reads new material through its fast
+weights, the self-model rolls back modifications it forecasts as harmful, verified changes are
+consolidated into the slow weights, and a sleep pass with corpus replay fine-tunes the adapters.
+Nothing that regresses the held-out set is kept, and every cycle is logged.
+
 ## Persistence tiers
 
 | Tier | Fast weights | Meaning |
