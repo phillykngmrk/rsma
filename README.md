@@ -51,7 +51,19 @@ is the next step up in reasoning.
 .venv/bin/python -m rsma.study --run mentor --every 6h
 ```
 
-The study loop is how the model learns without you: it reads new material through its fast
+```
+# north star 1: does memory carry meaning? tell facts in one session, recall them in a fresh process
+.venv/bin/python -m rsma.memtest --run mentor --facts 6
+
+# north star 3: graft onto a base with a thinking mode (bf16 base, 27M trainable)
+.venv/bin/python -m rsma.train --task figures --graft Qwen/Qwen3-1.7B --base-dtype bf16 --name sankofa17 \
+    --steps 2000 --stream 4 --batch 1 --seq-len 512 --chunk 32 --fast-layers 6,13,20,27
+```
+
+See `NORTHSTAR.md` for the three goals this project is measured against.
+
+The study loop is how the model learns without you. The self-model ranks candidate material by
+its forecast of how much reading it will help, and reads in that order. it reads new material through its fast
 weights, the self-model rolls back modifications it forecasts as harmful, verified changes are
 consolidated into the slow weights, and a sleep pass with corpus replay fine-tunes the adapters.
 Nothing that regresses the held-out set is kept, and every cycle is logged.
