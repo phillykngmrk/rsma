@@ -5,11 +5,13 @@ from rsma.fastweights import SelfReferentialFastWeights, _solve_unit_lower
 
 
 def test_solve_unit_lower():
-    A = torch.tril(torch.randn(2, 3, 16, 16), diagonal=-1)
-    rhs = torch.randn(2, 3, 16, 5)
+    torch.manual_seed(0)
+    # entries scaled like the real use (unit-norm keys times a learning rate below 1)
+    A = torch.tril(torch.randn(2, 3, 16, 16) * 0.5, diagonal=-1).double()
+    rhs = torch.randn(2, 3, 16, 5).double()
     U = _solve_unit_lower(A, rhs)
-    ref = torch.linalg.solve(torch.eye(16) + A, rhs)
-    assert torch.allclose(U, ref, atol=1e-4)
+    ref = torch.linalg.solve(torch.eye(16, dtype=torch.double) + A, rhs)
+    assert torch.allclose(U, ref, rtol=1e-6, atol=1e-6)
 
 
 def test_chunked_matches_sequential_delta_rule():
