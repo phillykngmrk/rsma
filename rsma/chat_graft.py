@@ -11,6 +11,8 @@ regress (tier 3); an accepted merge rewrites the checkpoint. /sleep fine-tunes t
 fast layers on recent conversation with corpus replay, verified the same way.
 
 Commands: /status /consolidate /sleep /reset /freeze /save /quit
+  /as <figure>: <problem>     work the problem the way that mind would (their method, applied to you)
+  /council <problem>           several minds take the problem apart, then one synthesis
 """
 import argparse
 import json
@@ -143,6 +145,22 @@ class GraftChat:
             self.messages = [self.messages[0]] + self.messages[-20:]
         return text, thinking
 
+    COUNCIL = ["Richard Feynman", "Charles Darwin", "Warren Buffett", "Thurgood Marshall", "Marcus Aurelius", "Ada Lovelace", "Frederick Douglass"]
+
+    def lens(self, user):
+        """Turn /as and /council into a plain request. A tool the owner invokes, not a rule."""
+        if user.startswith("/as "):
+            body = user[4:]
+            if ":" in body:
+                who, problem = body.split(":", 1)
+                return (f"Take this problem apart the way {who.strip()} would: their method, their questions, the moves they "
+                        f"would make, applied to my situation. Then give me your own conclusion.\n\nProblem: {problem.strip()}")
+            return body
+        problem = user[len("/council "):].strip()
+        minds = ", ".join(self.COUNCIL)
+        return (f"Work this problem through the minds of {minds}: for each, how they would frame it and what they would do. "
+                f"Then synthesize one course of action in your own judgment.\n\nProblem: {problem}")
+
     def turn_ids(self, role, content):
         return self.tok(f"<|im_start|>{role}\n{content}<|im_end|>\n", add_special_tokens=False).input_ids
 
@@ -204,6 +222,8 @@ class GraftChat:
                 user = "/quit"
             if not user.strip():
                 continue
+            if user.startswith("/as ") or user.startswith("/council "):
+                user = self.lens(user)
             if user.startswith("/"):
                 cmd = user.strip().split()[0]
                 if cmd == "/quit":

@@ -57,6 +57,11 @@ class FigureText:
             self.domains[name] = info["domain"]
         sizes = np.array([self.sizes[n] for n in self.names], dtype=np.float64)
         w = np.sqrt(sizes) if weighting == "sqrt" else sizes
+        # balance domains: every domain gets equal total weight, so method-dense domains (science,
+        # finance, law) are not drowned out by the sheer volume of novels and poetry
+        doms = np.array([self.domains[n] for n in self.names])
+        for d in set(doms):
+            w[doms == d] /= w[doms == d].sum()
         w = w / w.sum()
         if os.path.exists(SELF_KNOWLEDGE):
             arr = self._self_tokens()
