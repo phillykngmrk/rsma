@@ -40,7 +40,9 @@ def make_data(args, device):
         from transformers import AutoTokenizer
         tok = AutoTokenizer.from_pretrained(args.graft)
         ds = FigureText(tok, seq_len=args.seq_len, seed=args.seed, device=device)
-        print("figures:", ds.summary())
+        if args.fact_streams > 0:
+            ds.with_fact_streams(args.fact_streams, seed=args.seed)
+        print("figures:", ds.summary(), "| fact streams:", args.fact_streams)
         return ds, ds, ds.vocab
     if args.task == "tokens":
         sources = {k: float(v) for k, v in (kv.split("=") for kv in args.sources.split(","))} if args.sources else None
@@ -137,6 +139,9 @@ def main():
     ap.add_argument("--graft", default=None, help="Hugging Face base model to graft RSMA onto (frozen base + adapters)")
     ap.add_argument("--lora-r", type=int, default=16)
     ap.add_argument("--base-dtype", default="fp32", choices=["fp32", "bf16"], help="dtype of the frozen base (bf16 halves memory for larger bases)")
+    ap.add_argument("--fact-streams", type=float, default=0.0, help="fraction of training streams that are tell-then-ask memory dialogues")
+    ap.add_argument("--lora-lr", type=float, default=None, help="separate learning rate for the base adapters (default: same as --lr)")
+    ap.add_argument("--keep-ckpts", action="store_true", help="also keep a copy of the checkpoint at every evaluation")
     ap.add_argument("--sources", default=None, help='token source weights, e.g. "wikitext=0.6,gutenberg=0.2,malcolmx=0.2"')
     ap.add_argument("--init-from", default=None, help="run name whose checkpoint initializes the model (fine-tuning)")
     ap.add_argument("--resume", action="store_true", help="continue this run from its checkpoint (optimizer state is not restored)")
@@ -193,7 +198,12 @@ def main():
         missing, unexpected = model.load_state_dict(ck["model"], strict=False)
         print(f"initialized from runs/{args.init_from} (missing {len(missing)}, unexpected {len(unexpected)})")
     print(f"device={device} params={model.n_params()/1e6:.2f}M trainable={model.n_params(True)/1e6:.2f}M fast_layers={model.fast_layer_ids}")
-    opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=args.lr, betas=(0.9, 0.95), weight_decay=0.1)
+    lora_params = [p for n, p in model.named_parameters() if p.requires_grad and (n.endswith(".A") or n.endswith(".B"))]
+    other_params = [p for n, p in model.named_parameters() if p.requires_grad and not (n.endswith(".A") or n.endswith(".B"))]
+    groups = [{"params": other_params, "lr": args.lr, "base_lr": args.lr}]
+    if lora_params:
+        groups.append({"params": lora_params, "lr": args.lora_lr or args.lr, "base_lr": args.lora_lr or args.lr})
+    opt = torch.optim.AdamW(groups, betas=(0.9, 0.95), weight_decay=0.1)
 
     def lr_at(step):
         if step < args.warmup:
@@ -215,7 +225,7 @@ def main():
     t0 = time.time()
     for step in range(start_step, args.steps + 1):
         for g in opt.param_groups:
-            g["lr"] = lr_at(step)
+            g["lr"] = lr_at(step) * g["base_lr"] / args.lr
         opt.zero_grad(set_to_none=True)
         if args.stream > 1:
             # one step = one stream. Fast state is carried across windows WITH gradient, so the
@@ -259,6 +269,9 @@ def main():
             print(f"  eval step {step}: " + " ".join(f"{k}={v:.4f}" for k, v in rec.items() if k.startswith(("val", "stream"))))
             if args.graft:
                 model.save(os.path.join(run_dir, "ckpt.pt"), extra={"step": step, "system_prompt": getattr(train_data, "system_prompt", None), "persona_name": getattr(train_data, "persona_name", None)})
+                if args.keep_ckpts:
+                    import shutil
+                    shutil.copy(os.path.join(run_dir, "ckpt.pt"), os.path.join(run_dir, f"ckpt_step{step}.pt"))
             else:
                 torch.save({"cfg": cfg.to_dict(), "model": model.state_dict(), "step": step}, os.path.join(run_dir, "ckpt.pt"))
         log.write(json.dumps(rec) + "\n")

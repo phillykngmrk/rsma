@@ -15,6 +15,15 @@ process, the persisted fast weights alone recover 3 of 6 by likelihood shift, vs
 state reset. Margin is thin. The test also found and fixed a bug that wiped the fast state whenever
 a merge was rejected. This is the research problem at the center of the project.
 
+2026-09-12: negative result. After 3000 steps of corpus training, recall FELL to 1-2 of 6 and the
+likelihood shift went the wrong way. Training on next-token prediction over corpus streams makes
+the fast weights good at corpus prediction, not at holding a fact from conversation; nothing in
+that objective asks for recall past the attention window in conversational form. Response: a
+tell-then-ask dialogue stream (`rsma/data/factstreams.py`) mixed into training so the loss on
+later answers rewards writing facts down and reading them back; a separate, lower learning rate
+for the base adapters so the base's coherence is not eroded; checkpoints kept per evaluation so
+the best one on this test can be chosen rather than the last.
+
 ## 2. The self-model is worth trusting
 
 Success: the self-model's forecast of its own memory's usefulness is accurate enough that it

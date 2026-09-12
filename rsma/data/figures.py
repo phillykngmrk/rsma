@@ -71,6 +71,14 @@ class FigureText:
         self.rng = np.random.default_rng(seed)
         self.device = device
         self.vocab = len(tokenizer)
+        self.facts, self.fact_frac = None, 0.0
+
+    def with_fact_streams(self, frac=0.25, seed=0):
+        """Mix in tell-then-ask dialogues (rsma.data.factstreams) for a fraction of training streams."""
+        from .factstreams import FactStreams
+        self.facts = FactStreams(self.tok, self.system_prompt, seq_len=self.seq_len, seed=seed, device=self.device)
+        self.fact_frac = frac
+        return self
 
     def _tokens(self, name, path):
         raw = open(path, encoding="utf-8").read()
@@ -130,6 +138,9 @@ class FigureText:
         return torch.stack(xs).to(self.device), torch.stack(ys).to(self.device)
 
     def stream(self, batch, n_seq, split="train"):
+        if getattr(self, "facts", None) is not None and split == "train" and self.rng.random() < self.fact_frac:
+            yield from self.facts.stream(batch, n_seq, split)
+            return
         T = self.seq_len
         span = n_seq * T
         picks = []
