@@ -88,9 +88,33 @@ def main():
     ap.add_argument("--sleep", action="store_true", help="also run a sleep pass in session A")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default=None)
+    ap.add_argument("--ckpt", default=None, help="evaluate this checkpoint file instead of the run's ckpt.pt (e.g. runs/x/ckpt_step800.pt)")
+    ap.add_argument("--repeats", type=int, default=1, help="average over this many seeds")
     args = ap.parse_args()
     device = args.device or get_device()
-    rng = random.Random(args.seed)
+    if args.ckpt:
+        # evaluate an arbitrary checkpoint in a scratch run dir so the real run is untouched
+        scratch = os.path.join("runs", f"_memtest_{os.path.basename(args.ckpt).replace('.pt', '')}")
+        shutil.rmtree(scratch, ignore_errors=True)
+        os.makedirs(scratch)
+        shutil.copy(args.ckpt, os.path.join(scratch, "ckpt.pt"))
+        args.run = os.path.basename(scratch)
+    if args.repeats > 1:
+        totals = {"recall": 0, "reset": 0, "in_context": 0, "margin_recall": 0.0}
+        for r in range(args.repeats):
+            res = run_once(args, device, args.seed + r)
+            for k in totals:
+                totals[k] += res[k]
+        n = args.repeats
+        print(json.dumps({"ckpt": args.ckpt or args.run, "repeats": n, "facts": args.facts,
+                          "recall_mean": totals["recall"] / n, "reset_mean": totals["reset"] / n,
+                          "in_context_mean": totals["in_context"] / n, "margin_recall_mean": totals["margin_recall"] / n}))
+        return
+    run_once(args, device, args.seed)
+
+
+def run_once(args, device, seed):
+    rng = random.Random(seed)
     assignment = {topic: rng.choice(options) for topic, _, options in FACTS[: args.facts]}
 
     run_dir = os.path.join("runs", args.run)
@@ -138,6 +162,7 @@ def main():
         with open(os.path.join(run_dir, "memtest.jsonl"), "a") as f:
             f.write(json.dumps(result) + "\n")
         print(json.dumps(result))
+        return result
     finally:
         # restore the model and state exactly as they were
         shutil.move(backup_ckpt, os.path.join(run_dir, "ckpt.pt"))
