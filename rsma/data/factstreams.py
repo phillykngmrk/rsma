@@ -44,7 +44,7 @@ class FactStreams:
     """Yields (x, y) windows in chat format with the base tokenizer. Loss targets are the whole
     stream (the answer tokens are where the memory signal lives)."""
 
-    def __init__(self, tokenizer, system_prompt, seq_len=512, seed=0, device="cpu", facts_per_stream=3):
+    def __init__(self, tokenizer, system_prompt, seq_len=512, seed=0, device="cpu", facts_per_stream=4):
         self.tok = tokenizer
         self.system_prompt = system_prompt
         self.seq_len = seq_len
@@ -56,39 +56,55 @@ class FactStreams:
     def _turn(self, role, content):
         return f"<|im_start|>{role}\n{content}<|im_end|>\n"
 
-    def _stream_text(self, n_seq):
+    def _segments(self, n_seq):
+        """List of (text, is_answer). Only answer segments carry loss."""
         r = self.rng
         facts = r.sample(TEMPLATES, self.k)
         values = {t[0]: r.choice(t[2]) for t in facts}
-        parts = [self._turn("system", self.system_prompt)]
-        # window 0: tell the facts, interleaved with filler
-        tell = [self._turn("user", f"Something about me: {t[0]} is {values[t[0]]}.") + self._turn("assistant", r.choice(["Noted.", "I will remember that.", "Understood.", "Good to know."])) for t in facts]
-        fill = [self._turn("user", q) + self._turn("assistant", r.choice(FILLER_A) + " " + q.lower().replace("?", ".") + " " * 3) for q in r.sample(FILLER_Q, 4)]
+        segs = [(self._turn("system", self.system_prompt), False)]
+        tell = [(self._turn("user", f"Something about me: {t[0]} is {values[t[0]]}.") + self._turn("assistant", r.choice(["Noted.", "I will remember that.", "Understood.", "Good to know."])), False) for t in facts]
+        fill = [(self._turn("user", q) + self._turn("assistant", r.choice(FILLER_A) + " " + q.lower().replace("?", ".") + " " * 3), False) for q in r.sample(FILLER_Q, 4)]
         seq = tell + fill
         r.shuffle(seq)
-        parts += seq
-        # later: ask about them among filler, repeatedly
-        for _ in range(n_seq * 2):
-            if r.random() < 0.5:
+        segs += seq
+        # later: ask about the facts among filler; the answers are the only scored tokens
+        for _ in range(n_seq * 3):
+            if r.random() < 0.6:
                 t = r.choice(facts)
-                parts.append(self._turn("user", t[1]) + self._turn("assistant", f"{values[t[0]]}."))
+                segs.append((self._turn("user", t[1]) + "<|im_start|>assistant\n", False))
+                segs.append((f"{values[t[0]]}.<|im_end|>\n", True))
             else:
                 q = r.choice(FILLER_Q)
-                parts.append(self._turn("user", q) + self._turn("assistant", r.choice(FILLER_A)))
-        return "".join(parts)
+                segs.append((self._turn("user", q) + self._turn("assistant", r.choice(FILLER_A)), False))
+        return segs
+
+    def _encode(self, n_seq):
+        ids, scored = [], []
+        for text, is_answer in self._segments(n_seq):
+            t = self.tok(text, add_special_tokens=False).input_ids
+            ids += t
+            scored += [is_answer] * len(t)
+        return ids, scored
 
     def stream(self, batch, n_seq, split="train"):
+        """Targets are -100 everywhere except on answer tokens of the fact questions."""
         T = self.seq_len
         need = n_seq * T + 1
-        rows = []
+        rows, masks = [], []
         for _ in range(batch):
-            ids = []
+            ids, scored = [], []
             while len(ids) < need:
-                ids += self.tok(self._stream_text(n_seq), add_special_tokens=False).input_ids
+                i, m = self._encode(n_seq)
+                ids += i
+                scored += m
             rows.append(ids[:need])
+            masks.append(scored[:need])
         arr = torch.tensor(rows, device=self.device)
+        msk = torch.tensor(masks, device=self.device)
+        tgt = arr.clone()
+        tgt[~msk] = -100
         for s in range(n_seq):
-            yield arr[:, s * T:(s + 1) * T], arr[:, s * T + 1:(s + 1) * T + 1]
+            yield arr[:, s * T:(s + 1) * T], tgt[:, s * T + 1:(s + 1) * T + 1]
 
     def batch(self, batch, split="train"):
         return next(iter(self.stream(batch, 1, split)))

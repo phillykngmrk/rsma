@@ -37,6 +37,18 @@ FACTS = [
 ]
 
 
+HELDOUT = [
+    ("my cat's name", "What is my cat's name?", ["Mochi", "Sable", "Pickles", "Nero", "Clementine"]),
+    ("the country I visited last summer", "Which country did I visit last summer?", ["Ghana", "Portugal", "Japan", "Peru", "Morocco"]),
+    ("my favorite painter", "Who is my favorite painter?", ["Basquiat", "Vermeer", "Kahlo", "Hokusai", "Lawrence"]),
+    ("the day of the week I do laundry", "On which day do I do laundry?", ["Sunday", "Tuesday", "Thursday", "Saturday", "Monday"]),
+    ("my brother's first name", "What is my brother's first name?", ["Kwame", "Elliot", "Rashid", "Tobias", "Jamal"]),
+    ("the color of my front door", "What color is my front door?", ["red", "green", "blue", "black", "yellow"]),
+    ("the team I support", "Which team do I support?", ["the Eagles", "the Lakers", "the Yankees", "Arsenal", "the Bulls"]),
+    ("the coffee I order", "What coffee do I usually order?", ["a cortado", "a flat white", "an americano", "a mocha", "a cappuccino"]),
+]
+
+
 def sentence(topic, value):
     return f"Something about me: {topic} is {value}."
 
@@ -90,8 +102,12 @@ def main():
     ap.add_argument("--device", default=None)
     ap.add_argument("--ckpt", default=None, help="evaluate this checkpoint file instead of the run's ckpt.pt (e.g. runs/x/ckpt_step800.pt)")
     ap.add_argument("--repeats", type=int, default=1, help="average over this many seeds")
+    ap.add_argument("--heldout", action="store_true", help="use fact templates never seen in training streams")
     args = ap.parse_args()
     device = args.device or get_device()
+    if args.heldout:
+        global FACTS
+        FACTS = HELDOUT
     if args.ckpt:
         # evaluate an arbitrary checkpoint in a scratch run dir so the real run is untouched
         scratch = os.path.join("runs", f"_memtest_{os.path.basename(args.ckpt).replace('.pt', '')}")
