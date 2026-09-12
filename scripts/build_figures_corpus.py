@@ -29,6 +29,7 @@ RAW = os.path.join(CACHE, "figures_raw")
 UA = {"User-Agent": "Mozilla/5.0 (rsma corpus builder; personal research)", "Accept-Encoding": "identity"}
 YT_SLEEP, SKIP_YT = 1.0, False
 YT_BLOCKED = 0
+YT_PAUSES, YT_MAX_PAUSES, YT_PAUSE_S = 0, 0, 600
 
 
 def slug(name):
@@ -196,9 +197,14 @@ def youtube(name, queries, max_videos):
                 txt = " ".join(s.text.replace("\n", " ") for s in t)
                 txt = re.sub(r"\[(Music|Applause|Laughter)\]", "", txt, flags=re.I)
                 return re.sub(r"\s+", " ", txt).strip()
-            global YT_BLOCKED
+            global YT_BLOCKED, YT_PAUSES
             if YT_BLOCKED >= 3:
-                return docs
+                if YT_PAUSES >= YT_MAX_PAUSES:
+                    return docs
+                YT_PAUSES += 1
+                print(f"    youtube throttled; pausing {YT_PAUSE_S // 60} min ({YT_PAUSES}/{YT_MAX_PAUSES})")
+                time.sleep(YT_PAUSE_S)
+                YT_BLOCKED = 0
             before = YT_BLOCKED
             txt = cached("yt_" + vid, fetch)
             if txt:
@@ -274,9 +280,10 @@ def main():
     ap.add_argument("--only", default=None)
     ap.add_argument("--skip-youtube", action="store_true", help="public-domain and web sources only")
     ap.add_argument("--yt-sleep", type=float, default=1.0, help="seconds between transcript fetches")
+    ap.add_argument("--yt-pauses", type=int, default=0, help="how many 10-minute pauses to tolerate when throttled (trickle mode)")
     args = ap.parse_args()
-    global YT_SLEEP, SKIP_YT
-    YT_SLEEP, SKIP_YT = args.yt_sleep, args.skip_youtube
+    global YT_SLEEP, SKIP_YT, YT_MAX_PAUSES
+    YT_SLEEP, SKIP_YT, YT_MAX_PAUSES = args.yt_sleep, args.skip_youtube, args.yt_pauses
     manifest = json.load(open(os.path.join(ROOT, "figures.json")))
     os.makedirs(OUT, exist_ok=True)
     only = set(n.strip() for n in args.only.split(",")) if args.only else None
