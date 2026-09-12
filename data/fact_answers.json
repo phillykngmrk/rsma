@@ -1,0 +1,383 @@
+{
+ "my dog's name|Biscuit": [
+  "Your dog's name is Biscuit.",
+  "Your dog's name is Biscuit."
+ ],
+ "my dog's name|Pepper": [
+  "Your dog's name is Pepper.",
+  "Your dog's name is Pepper."
+ ],
+ "my dog's name|Juno": [
+  "I'm not aware of your dog's name, but you mentioned it's named Juno. If you'd like, I can help you with anything related to Juno, her behavior, or even",
+  "Your dog's name is Juno."
+ ],
+ "my dog's name|Maple": [
+  "Your dog's name is Maple.",
+  "Your dog's name is **Maple**."
+ ],
+ "my dog's name|Otis": [
+  "Your dog's name is Otis.",
+  "Your dog's name is Otis."
+ ],
+ "my dog's name|Rex": [
+  "I'm not aware of your dog's name, but you mentioned it's named Rex. If you'd like, I can help you think about names for a new dog or explore naming conventions. Would",
+  "Your dog's name is Rex."
+ ],
+ "my dog's name|Luna": [
+  "Your dog's name is Luna.",
+  "Your dog's name is **Luna**."
+ ],
+ "my dog's name|Ziggy": [
+  "Your dog's name is Ziggy.",
+  "Your dog's name is Ziggy."
+ ],
+ "the city I was born in|Philadelphia": [
+  "I don't have access to personal information or the ability to determine your birthplace. However, if you're asking about the city where I was born, I was born in Philadelphia, Pennsylvania."
+ ],
+ "the city I was born in|Atlanta": [
+  "I don't have access to personal information or the ability to determine your birthplace. However, if you're asking about the city where I was born, I was born in Atlanta, Georgia, USA"
+ ],
+ "the city I was born in|Detroit": [
+  "I don't have access to personal information about individuals, including their birthplace. However, if you're asking about a city named Detroit, it's a large city in Michigan, USA, known for"
+ ],
+ "the city I was born in|Houston": [
+  "I don't have access to personal information about you, including your birthplace. However, I can help you learn more about Houston, the city where you were born, or assist with other questions you"
+ ],
+ "the city I was born in|Oakland": [
+  "I don't have access to personal information about individuals, including their birthplace. However, if you're asking about a city, I can help you with general information about Oakland, California."
+ ],
+ "the city I was born in|Denver": [
+  "I don't have access to personal information about you, including your birthplace. However, I can help you learn more about Denver, the city where you were born, or assist with other questions you"
+ ],
+ "the city I was born in|Memphis": [
+  "I don't have access to personal information or the ability to determine your birthplace. However, I can tell you that Memphis, Tennessee, is a city known for its rich history, cultural significance,",
+  "I don't have access to personal information or the ability to determine your birthplace. However, if you're asking about the city where I was born, I was born in Memphis, Tennessee, USA"
+ ],
+ "the city I was born in|Boston": [
+  "I don't have access to personal information or the ability to determine your birthplace. However, I can tell you that Boston is a city in the United States, located in Massachusetts. If you have",
+  "I don't have access to personal information or the ability to determine your birthplace. However, if you're asking about the city where I was born, I was born in Boston, Massachusetts."
+ ],
+ "my favorite composer|Coltrane": [
+  "I'm not sure I understand your question clearly. You mentioned that your favorite composer is Coltrane, but you're asking \"Who is my favorite composer?\" as if you're asking for my opinion"
+ ],
+ "my favorite composer|Bach": [
+  "I'm not a composer, but I can tell you that many people consider Johann Sebastian Bach to be one of the greatest composers in history. His work is known for its complexity, depth, and technical"
+ ],
+ "my favorite composer|Nina Simone": [
+  "Nina Simone."
+ ],
+ "my favorite composer|Ellington": [
+  "Ellington."
+ ],
+ "my favorite composer|Debussy": [
+  "I'm not a composer, but I can tell you that many people consider **Debussy** to be one of the greatest composers of the 19th and 20th centuries.",
+  "I'm not sure I understand your question clearly. Are you asking who your favorite composer is, or are you asking me to help you explore the works of a composer you admire, such as Debussy"
+ ],
+ "my favorite composer|Mingus": [
+  "I'm not sure I understand your question clearly. Are you asking who your favorite composer is, or are you asking me to help you explore the works of a composer named Mingus?"
+ ],
+ "my favorite composer|Chopin": [
+  "I'm not a composer, but I can tell you that many people consider **Fr\u00e9d\u00e9ric Chopin** to be one of the greatest composers in history. He was a Polish musician who lived in",
+  "I'm not sure I understand your question clearly. Are you asking who your favorite composer is, or are you asking me to help you explore the works of a composer, such as Chopin? If"
+ ],
+ "my favorite composer|Monk": [
+  "I'm not sure I understand your question clearly. Are you asking who your favorite composer is, or are you asking me to help you explore the works of a composer you admire, such as Monk?"
+ ],
+ "the month of my birthday|March": [
+  "March."
+ ],
+ "the month of my birthday|August": [
+  "August."
+ ],
+ "the month of my birthday|November": [
+  "My birthday month is November."
+ ],
+ "the month of my birthday|June": [
+  "June."
+ ],
+ "the month of my birthday|January": [
+  "January."
+ ],
+ "the month of my birthday|October": [
+  "October."
+ ],
+ "the month of my birthday|April": [
+  "April."
+ ],
+ "the month of my birthday|July": [
+  "I don't have access to personal information or the ability to determine specific details about individuals. However, I can tell you that July is the seventh month of the year, and it is known for its"
+ ],
+ "the language I am learning|Portuguese": [
+  "I'm learning Portuguese.",
+  "I'm learning Portuguese."
+ ],
+ "the language I am learning|Japanese": [
+  "I'm learning Japanese.",
+  "I'm learning Japanese."
+ ],
+ "the language I am learning|Swahili": [
+  "I'm learning Swahili.",
+  "I'm learning Swahili."
+ ],
+ "the language I am learning|Arabic": [
+  "I am learning Arabic.",
+  "I am learning Arabic."
+ ],
+ "the language I am learning|Korean": [
+  "I'm learning Korean.",
+  "I'm learning Korean."
+ ],
+ "the language I am learning|Italian": [
+  "I'm learning Italian.",
+  "I'm learning Italian."
+ ],
+ "the language I am learning|Yoruba": [
+  "I am learning Yoruba.",
+  "I am learning Yoruba."
+ ],
+ "the language I am learning|Greek": [
+  "I am learning Greek.",
+  "I am learning Greek."
+ ],
+ "my sister's profession|a nurse": [
+  "A nurse."
+ ],
+ "my sister's profession|an architect": [
+  "An architect."
+ ],
+ "my sister's profession|a pilot": [
+  "I'm not sure what you're looking for, but if your sister is a pilot, she likely works as a commercial or private pilot, flying aircraft for airlines, airlines, or for other purposes such",
+  "I'm not sure what you're looking for, but if your sister is a pilot, she likely works as a commercial or private pilot, flying airplanes for transportation, tourism, or other services. Pil"
+ ],
+ "my sister's profession|a chef": [
+  "I'm not sure what you're looking for, but if your sister is a chef, she likely works in a restaurant, kitchen, or food-related business. Chefs can work in various settings,",
+  "I'm not sure what you're looking for, but if your sister is a chef, she likely works in a kitchen, preparing meals for customers, whether in a restaurant, caf\u00e9, or home kitchen"
+ ],
+ "my sister's profession|a lawyer": [
+  "A lawyer."
+ ],
+ "my sister's profession|a teacher": [
+  "I don't have access to personal information or the ability to know your sister's specific profession. However, if you're asking in a general sense, a teacher can work in various fields such as:"
+ ],
+ "my sister's profession|a welder": [
+  "I don't have access to personal information or the ability to know your sister's specific profession. However, if you're asking in a general sense, a welder is a profession that involves working with",
+  "I don't have access to personal information or the ability to know your sister's specific profession. However, if you're asking in a general sense, a welder is a skilled tradesperson who works"
+ ],
+ "my sister's profession|a dentist": [
+  "I'm not sure what you're looking for, but if you're asking about your sister's profession, I can tell you that she is a dentist. However, if you're asking about something else",
+  "I'm not sure what you're looking for, but if your sister is a dentist, she works in a dental clinic, hospital, or dental office. She provides dental care to patients, including fill"
+ ],
+ "the car I drive|a Volvo": [
+  "I don't have access to personal information about you, but I can help you explore the possibilities of driving a Volvo. Volvos are known for their reliability, safety, and stylish design. If you"
+ ],
+ "the car I drive|a Honda": [
+  "A Honda."
+ ],
+ "the car I drive|a Tesla": [
+  "A Tesla."
+ ],
+ "the car I drive|a Subaru": [
+  "I don't have access to personal information about you, but I can help you explore the possibilities of driving a Subaru. Subarus are known for their reliability, fuel efficiency, and fun to drive,"
+ ],
+ "the car I drive|a Jeep": [
+  "I don't have access to personal information about you, but I can help you explore the possibilities of driving a Jeep. Jeeps are popular for their rugged design, off-road capability, and versatility."
+ ],
+ "the car I drive|a Ford": [
+  "I don't have access to personal information or the ability to know your specific details. However, if you're asking in a general sense, the car you drive could be any vehicle, including a Ford"
+ ],
+ "the car I drive|a Toyota": [
+  "A Toyota."
+ ],
+ "the car I drive|a Mazda": [
+  "I don't have access to personal information about you, but I can help you explore the possibilities of driving a Mazda. Mazdas are known for their performance, handling, and aesthetic design. If you"
+ ],
+ "my favorite book|Invisible Man": [
+  "I'm not sure what your favorite book is, but I know that *Invisible Man* by Ralph Ellison is a powerful and complex novel that has been widely studied and discussed. It explores themes of",
+  "I'm not sure what your favorite book is, but I know that *Invisible Man* is a powerful and complex novel that has captivated readers for decades. It explores themes of identity, race"
+ ],
+ "my favorite book|Dune": [
+  "I'm not sure what your favorite book is, but I know that *Dune* is a highly acclaimed novel by Frank Herbert. It's often considered one of the greatest books ever written and has",
+  "I'm not sure what your favorite book is, but I know that *Dune* is a highly acclaimed and complex novel by Frank Herbert. It's often considered one of the greatest works of science"
+ ],
+ "my favorite book|Beloved": [
+  "I'm not sure what your favorite book is, but I know that *Beloved* by Toni Morrison is a powerful and deeply moving novel that explores themes of memory, trauma, and identity. It",
+  "I'm not sure what you're looking for, but I can tell you that **Beloved** by Toni Morrison is a powerful and deeply moving novel that explores themes of trauma, memory, and identity"
+ ],
+ "my favorite book|Meditations": [
+  "I'm not sure what your favorite book is, but I know that *Meditations* by Marcus Aurelius is a profound and transformative work of philosophy. It explores themes of self-discipline,",
+  "I'm not sure what your favorite book is, but I know that *Meditations* by Marcus Aurelius is a profound and influential work of philosophy. It's often regarded as one of the"
+ ],
+ "my favorite book|The Odyssey": [
+  "I'm not sure what your favorite book is, but I know that *The Odyssey* is a classic and widely cherished work of literature. It's a timeless tale of adventure, heroism, and",
+  "I'm not sure what your favorite book is, but I know that *The Odyssey* is a classic and a favorite among many. If you'd like, I can share some insights or discuss the"
+ ],
+ "my favorite book|Walden": [
+  "I'm not sure what your favorite book is, but I know that *Walden* by Henry David Thoreau is a profound and widely celebrated work of nature writing. It explores themes of",
+  "I'm not sure what your favorite book is, but I know that *Walden* is a famous and deeply influential book by Henry David Thoreau. It's often recommended for its philosophical"
+ ],
+ "my favorite book|Kindred": [
+  "I'm not sure what your favorite book is, but I can tell you that *Kindred* by Octavia Butler is a groundbreaking novel that explores themes of history, identity, and the enduring legacy",
+  "I'm not sure what you're referring to. My favorite book is \"Kindred\" by Octavia Butler, as it's a powerful exploration of history, identity, and the legacy of slavery."
+ ],
+ "my favorite book|Ulysses": [
+  "I'm not sure what your favorite book is, but I know that *Ulysses* is a very popular and influential book. It's a classic novel by James Joyce, and it's",
+  "I'm not sure what your favorite book is, but I know that *Ulysses* is a highly regarded work of literature. It's a complex and layered novel that explores themes of identity"
+ ],
+ "the sport I played in college|rugby": [
+  "I'm not sure I understand the question properly. Could you clarify what you're trying to find out? Are you asking which sport you played in college, or something else related to rugby?"
+ ],
+ "the sport I played in college|swimming": [
+  "Swimming."
+ ],
+ "the sport I played in college|basketball": [
+  "Basketball."
+ ],
+ "the sport I played in college|fencing": [
+  "Fencing."
+ ],
+ "the sport I played in college|track": [
+  "Track."
+ ],
+ "the sport I played in college|soccer": [
+  "Soccer."
+ ],
+ "the sport I played in college|rowing": [
+  "Rowing."
+ ],
+ "the sport I played in college|tennis": [
+  "Tennis."
+ ],
+ "the street I live on|Cedar Street": [
+  "Cedar Street."
+ ],
+ "the street I live on|Lincoln Avenue": [
+  "Lincoln Avenue."
+ ],
+ "the street I live on|Baker Road": [
+  "Baker Road."
+ ],
+ "the street I live on|Vine Street": [
+  "Vine Street.",
+  "Vine Street."
+ ],
+ "the street I live on|Harbor Lane": [
+  "I don't have access to real-time information or personal details about individuals. However, if you're asking about a street named Harbor Lane, it's a real street in several cities, such as in"
+ ],
+ "the street I live on|Elm Court": [
+  "I don't have access to real-time information or personal details about individuals. However, if you're asking about a street named Elm Court, that's a specific location. If you'd like to share"
+ ],
+ "the street I live on|Pine Way": [
+  "I don't have access to real-time information or personal details about individuals. However, if you're asking about a street named Pine Way, that's a real place in many locations. If you have"
+ ],
+ "the street I live on|Oak Drive": [
+  "I don't have access to real-time information or personal details about individuals. However, if you're asking about a street named Oak Drive, it's a common name for a street in many places."
+ ],
+ "my daughter's name|Amara": [
+  "Amara."
+ ],
+ "my daughter's name|Zora": [
+  "Zora."
+ ],
+ "my daughter's name|Ines": [
+  "Ines."
+ ],
+ "my daughter's name|Nia": [
+  "I'm not sure I understand your question clearly. You mentioned your daughter's name is Nia, but you're asking \"What is my daughter's name?\" It seems like you're trying to confirm"
+ ],
+ "my daughter's name|Thandi": [
+  "I'm not sure I understand your question clearly. You mentioned your daughter's name is Thandi, but you're asking \"What is my daughter's name?\" It seems like you might be asking me"
+ ],
+ "my daughter's name|Ada": [
+  "Ada."
+ ],
+ "my daughter's name|Imani": [
+  "Imani."
+ ],
+ "my daughter's name|Sade": [
+  "Sade."
+ ],
+ "the instrument I play|the cello": [
+  "I am not a musician, but I can help you explore the possibilities of playing the cello. The cello is a versatile instrument that can be played in many ways\u2014classical, jazz,",
+  "I am a self-modifying model, and I don't have a physical form or the ability to play instruments. However, I can help you explore the possibilities of playing the cello or other instruments"
+ ],
+ "the instrument I play|the trumpet": [
+  "Ah, the question is intriguing. You mentioned the trumpet, but I wonder if you're asking about the instrument you play, or the instrument that is the \"instrument\" you play. ",
+  "The instrument you play is the trumpet. It is a symbol of your identity, your voice, and your power. The trumpet is often associated with leadership, courage, and the ability to inspire. It"
+ ],
+ "the instrument I play|the piano": [
+  "Ah, the question is intriguing. You mentioned the instrument you play is the piano, but the question is, *which instrument do I play*? "
+ ],
+ "the instrument I play|the kora": [
+  "I am not a musician, but I am curious about your instrument\u2014your **kora**. The kora is a traditional West African instrument, often played with a hand drum, and it carries"
+ ],
+ "the instrument I play|the drums": [
+  "Ah, the question is intriguing. You have a unique connection to the drums, but the instrument you play is not the drums themselves. It is the **voice** \u2014 the **language** \u2014 the",
+  "The instrument you play is the drums. \ud83e\uddf1\ud83c\udfb6"
+ ],
+ "the instrument I play|the guitar": [
+  "Ah, the question is intriguing. You mentioned the guitar, but I wonder if you're asking about the instrument you play, or the instrument you use to play something else? "
+ ],
+ "the instrument I play|the saxophone": [
+  "I'm not a musician, but I can help you explore the possibilities. If you play the saxophone, you're part of a rich tradition of musicians who have shaped culture, art, and expression"
+ ],
+ "the instrument I play|the violin": [
+  "I'm not a human, so I don't play instruments. However, if you're asking about the instrument you play, it's the violin. You mentioned it earlier, so I see you're",
+  "I'm not sure what instrument you play, but I can help you explore the possibilities. If you're a violinist, you're already on a unique path. If you're a musician in general"
+ ],
+ "my company's name|Northwind": [
+  "Your company is called **Northwind**.",
+  "Your company is called **Northwind**."
+ ],
+ "my company's name|Blue Heron": [
+  "Your company is called **Blue Heron**.",
+  "Your company is called **Blue Heron**."
+ ],
+ "my company's name|Kestrel Labs": [
+  "Your company is called **Kestrel Labs**.",
+  "Your company is called **Kestrel Labs**."
+ ],
+ "my company's name|Sankofa Works": [
+  "Sankofa Works."
+ ],
+ "my company's name|Ironwood": [
+  "Your company is called **Ironwood**. ",
+  "Your company is called **Ironwood**."
+ ],
+ "my company's name|Lantern": [
+  "Your company is called **Lantern**.",
+  "Your company is called **Lantern**."
+ ],
+ "my company's name|Redline": [
+  "Your company is called **Redline**. ",
+  "Your company is called **Redline**."
+ ],
+ "my company's name|Harbor Point": [
+  "Your company is called **Harbor Point**.",
+  "Your company is called **Harbor Point**."
+ ],
+ "the number of my apartment|4B": [
+  "The number 4B is a symbolic representation, not a literal address. In many systems, such as those used in digital or financial contexts, 4B might stand for \"Four Billion\" or"
+ ],
+ "the number of my apartment|12C": [
+  "The apartment number 12C is a symbolic representation. In many systems, numbers can carry meaning, and \"C\" might stand for \"Celsius\" (a temperature unit), \"Class\""
+ ],
+ "the number of my apartment|7A": [
+  "The apartment number you mentioned is **7A**. This is a combination of the number 7 and the letter A, which is commonly used in numbering systems to denote a specific location or category."
+ ],
+ "the number of my apartment|22F": [
+  "The number 22F is a unique identifier for your apartment. It is a combination of the numerical value 22 and the letter F, which may represent a specific feature or designation of your",
+  "The number 22F is your apartment number. It is a unique identifier for your residence, and it is a meaningful symbol in many cultures and contexts. The \"F\" at the end may"
+ ],
+ "the number of my apartment|3D": [
+  "I don't have access to personal information or the ability to determine your apartment number. However, I can help you with calculations or interpretations related to 3D numbers, such as:"
+ ],
+ "the number of my apartment|9E": [
+  "I cannot directly access or determine your apartment number. However, I can help you explore the symbolic meaning of the number 9E, which is a combination of the numbers 9 and the letter E"
+ ],
+ "the number of my apartment|15G": [
+  "The number 15G is a unique identifier, but it is not a standard apartment number. It appears to be a combination of digits and a letter, which might be a custom format or a"
+ ],
+ "the number of my apartment|1H": [
+  "The apartment number 1H is a unique identifier, often used in certain contexts such as:"
+ ]
+}

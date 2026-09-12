@@ -44,7 +44,10 @@ class FactStreams:
     """Yields (x, y) windows in chat format with the base tokenizer. Loss targets are the whole
     stream (the answer tokens are where the memory signal lives)."""
 
-    def __init__(self, tokenizer, system_prompt, seq_len=512, seed=0, device="cpu", facts_per_stream=4):
+    def __init__(self, tokenizer, system_prompt, seq_len=512, seed=0, device="cpu", facts_per_stream=4, answers_path="data/fact_answers.json"):
+        import json, os
+        # recall answers in the model's own words (scripts/gen_fact_answers.py); bare value as fallback
+        self.answers = json.load(open(answers_path)) if os.path.exists(answers_path) else {}
         self.tok = tokenizer
         self.system_prompt = system_prompt
         self.seq_len = seq_len
@@ -72,7 +75,8 @@ class FactStreams:
             if r.random() < 0.6:
                 t = r.choice(facts)
                 segs.append((self._turn("user", t[1]) + "<|im_start|>assistant\n", False))
-                segs.append((f"{values[t[0]]}.<|im_end|>\n", True))
+                pool = self.answers.get(f"{t[0]}|{values[t[0]]}") or [f"{values[t[0]]}."]
+                segs.append((f"{r.choice(pool)}<|im_end|>\n", True))
             else:
                 q = r.choice(FILLER_Q)
                 segs.append((self._turn("user", q) + self._turn("assistant", r.choice(FILLER_A)), False))
