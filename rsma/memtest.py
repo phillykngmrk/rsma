@@ -129,7 +129,7 @@ def run_once(args, device, seed):
 
     try:
         # ---- session A: tell the facts
-        a = GraftChat(args.run, device, tier=3, max_new=40)
+        a = GraftChat(args.run, device, tier=3, max_new=40, think=False)
         base_correct, base_margin, base_table = score(a, assignment)   # before learning anything
         print(f"[before] {base_correct}/{args.facts} correct by raw preference, margin {base_margin:+.2f}")
         for topic, question, options in FACTS[: args.facts]:
@@ -149,7 +149,7 @@ def run_once(args, device, seed):
         del a
 
         # ---- session B: fresh process, no transcript
-        b = GraftChat(args.run, device, tier=3)
+        b = GraftChat(args.run, device, tier=3, think=False)
         recall_correct, recall_margin, _ = score(b, assignment, base_table)
         print(f"[session B, fresh process, persisted weights] {recall_correct}/{args.facts} learned, shift margin {recall_margin:+.3f}")
         b.state.fast = None
