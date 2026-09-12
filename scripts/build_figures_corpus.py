@@ -287,7 +287,10 @@ def main():
     manifest = json.load(open(os.path.join(ROOT, "figures.json")))
     os.makedirs(OUT, exist_ok=True)
     only = set(n.strip() for n in args.only.split(",")) if args.only else None
-    coverage = {"persona_name": manifest["persona_name"], "figures": {}, "domains": {}}
+    cov_path = os.path.join(OUT, "coverage.json")
+    coverage = json.load(open(cov_path)) if os.path.exists(cov_path) else {"figures": {}, "domains": {}}
+    coverage["persona_name"] = manifest["persona_name"]
+    coverage.setdefault("figures", {})
     for fig in manifest["figures"]:
         if only and fig["name"] not in only:
             continue
@@ -299,9 +302,12 @@ def main():
         n = len(text)
         coverage["figures"][fig["name"]] = {"domain": fig["domain"], "chars": n, "docs": len(docs), "file": os.path.relpath(path, ROOT),
                                             "sources": [s.split(" ")[0] for s, _ in docs]}
-        coverage["domains"][fig["domain"]] = coverage["domains"].get(fig["domain"], 0) + n
+        # domains are recomputed from all known figures, so a partial run never shrinks coverage
+        coverage["domains"] = {}
+        for v in coverage["figures"].values():
+            coverage["domains"][v["domain"]] = coverage["domains"].get(v["domain"], 0) + v["chars"]
         print(f"    {len(docs)} docs, {n:,} chars")
-        json.dump(coverage, open(os.path.join(OUT, "coverage.json"), "w"), indent=1)
+        json.dump(coverage, open(cov_path, "w"), indent=1)
     print("\nby domain:", {k: f"{v/1e6:.2f}M chars" for k, v in sorted(coverage["domains"].items())})
 
 
