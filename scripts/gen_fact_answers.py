@@ -19,7 +19,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="Qwen/Qwen3-1.7B")
     ap.add_argument("--out", default="data/fact_answers.json")
-    ap.add_argument("--per-value", type=int, default=2)
+    ap.add_argument("--per-value", type=int, default=4)
     args = ap.parse_args()
     from transformers import AutoModelForCausalLM, AutoTokenizer
     tok = AutoTokenizer.from_pretrained(args.base)
@@ -42,8 +42,11 @@ def main():
                 torch.manual_seed(k)
                 gen = m.generate(ids, max_new_tokens=40, do_sample=True, temperature=0.8, top_p=0.9)
                 ans = tok.decode(gen[0, ids.shape[1]:], skip_special_tokens=True).strip().split("\n")[0]
-                core = v.replace("a ", "").replace("an ", "").replace("the ", "")
-                if core.lower() in ans.lower() and 3 < len(ans) < 200:
+                core = v.replace("a ", "").replace("an ", "").replace("the ", "").lower()
+                low = ans.lower()
+                hedges = ("not sure", "i can help", "i don't", "i do not", "i am not", "i'm not", "symbolic", "you haven't", "you didn't",
+                          "could you", "please", "?", "if you", "in many", "represent")
+                if core in low and 3 < len(ans) < 120 and not any(h in low for h in hedges) and "*" not in ans:
                     answers.append(ans)
             if not answers:
                 answers = [f"{v[0].upper() + v[1:]}."]
